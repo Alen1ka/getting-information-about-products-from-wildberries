@@ -72,7 +72,7 @@ def get_pages(shard_key, query):
                   f'{query}&' \
                   f'version=3'
         response = requests.get(product).json()
-        # save_answer_kafka()
+        save_answer_kafka()
         print(product)
         print(response)
 
