@@ -1,5 +1,6 @@
 import requests
 import json
+from confluent_kafka import Producer
 
 
 # Принимает на вход по API адрес категории на wildberries.ru
@@ -54,7 +55,7 @@ def get_api(url):
                         # проверка на нужную подкатегорию товаров
                         if subcategory['pageUrl'] == page_url_category[0]:
                             subcategory_request_data = subcategory
-    print(subcategory_request_data)
+    # print(subcategory_request_data)
     shard_key, query = get_category_data(subcategory_request_data)
     get_pages(shard_key, query)  # electronic19, subject=523;524;526;527;532;593;844;982;1388;1407;3656;4072
 
@@ -73,13 +74,62 @@ def get_pages(shard_key, query):
                   f'version=3'
         response = requests.get(product).json()
         save_answer_kafka()
-        print(product)
-        print(response)
+        # print(product)
+        # print(response)
 
 
 # Сохраняет каждый JSON ответ сервера отдельным сообщением в "сыром виде" в топик **wb-category** в Kafka
 def save_answer_kafka():
     print(1)
+
+    class ExampleProducer:
+        broker = "localhost:9092"
+        topic = "test-topic"
+        producer = None
+
+        def __init__(self):
+            self.producer = Producer({
+                'bootstrap.servers': self.broker,
+                'socket.timeout.ms': 100,
+                'api.version.request': 'false',
+                'broker.version.fallback': '0.9.0',
+            }
+            )
+
+        def delivery_report(self, err, msg):
+            """ Called once for each message produced to indicate delivery result.
+                Triggered by poll() or flush(). """
+            if err is not None:
+                print('Message delivery failed: {}'.format(err))
+            else:
+                print('Message delivered to {} [{}]'.format(
+                    msg.topic(), msg.partition()))
+
+        def send_msg_async(self, msg):
+            print("Send message asynchronously")
+            self.producer.produce(
+                self.topic,
+                msg,
+                callback=lambda err, original_msg=msg: self.delivery_report(err, original_msg
+                                                                            ),
+            )
+            self.producer.flush()
+
+        def send_msg_sync(self, msg):
+            print("Send message synchronously")
+            self.producer.produce(
+                self.topic,
+                msg,
+                callback=lambda err, original_msg=msg: self.delivery_report(
+                    err, original_msg
+                ),
+            )
+            self.producer.flush()
+
+    # SENDING DATA TO KAFKA TOPIC
+    example_producer = ExampleProducer()
+    message = "Hello this message will be sent to the kafka topic."
+    example_producer.send_msg_async(message)
 
 
 if __name__ == '__main__':
