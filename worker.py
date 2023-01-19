@@ -7,9 +7,10 @@ from confluent_kafka import Producer
 def read_conf():
     f = open('conf.json')
     data = json.load(f)
-    url_wildberries = data['url_wildberries']
+    server = data["default"]["bootstrap.servers"]
+    topic_category = data["default"]["topic_category"]
     f.close()
-    return url_wildberries
+    return server, topic_category
 
 
 def get_category_data(subcategory):
@@ -82,39 +83,51 @@ def delivery_report(err, msg):
     if err is not None:
         print('Ошибка доставки сообщения: {}'.format(err))
     else:
-        print('Сообщение, доставленно в {} [{}]'.format(
-            msg.topic(), msg.partition()))
+        print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition(), msg.offcet()))
 
 
-def send_msg_async(producer, topic, msg):
+def send_msg_async(producer, topic, msg, page_number):
     print("Отправить сообщение асинхронно")
     producer.produce(
         topic,
         msg,
-        callback=lambda err,
-        original_msg=msg: delivery_report(err, original_msg),
+        callback=lambda err, original_msg=msg: delivery_report(err, original_msg),
+        key=f'{page_number}'
     )
     producer.flush()
 
 
 # Сохраняет каждый JSON ответ сервера отдельным сообщением в "сыром виде" в топик **wb-category** в Kafka
 def save_answer_kafka(response, page_number):
-    broker = f"localhost:9092"
+    server, topic_category = read_conf()
+    p = Producer({
+        'bootstrap.servers': server
+    })
+
+    # Trigger any available delivery report callbacks from previous produce() calls
+    p.poll(0)
+
+    # Asynchronously produce a message, the delivery report callback
+    # will be triggered from poll() above, or flush() below, when the message has
+    # been successfully delivered or failed permanently.
+    p.produce(topic_category, f'{response}', callback=delivery_report)
+
+    # Wait for any outstanding messages to be delivered and delivery report
+    # callbacks to be triggered.
+    p.flush()
+    '''broker = f"localhost:9092"
     topic = "wb-category"
 
     producer = Producer({
         'bootstrap.servers': broker,
-        'socket.timeout.ms': 100,
-        'api.version.request': 'false',
-        'broker.version.fallback': '0.9.0',
+        # 'socket.timeout.ms': 100,
+        # 'api.version.request': 'false',
+        # 'broker.version.fallback': '0.9.0',
     })
 
     # отправка данных в топик Кафка
-    message = f"{response}"
-    send_msg_async(producer, topic, message)
+    send_msg_async(producer, topic,  f"{response}", page_number)'''
 
 
 if __name__ == '__main__':
-    link_to_wildberries = read_conf()
-    get_api(link_to_wildberries)
-    # save_answer_kafka()
+    get_api("https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation")

@@ -1,3 +1,14 @@
 {
-  "url_wildberries": "https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation"
+
+
+  "default": {
+    "_comment1": "_ответ сервера о товарах",
+    "topic_category": "wb-category",
+    "bootstrap.servers": "localhost:9092"
+  },
+  "consumer": {
+    "_comment2": "_информацию о каждом товаре",
+    "topic_products": "wb-products",
+    "auto.offset.reset": "earliest"
+  }
 }
