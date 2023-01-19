@@ -73,65 +73,48 @@ def get_pages(shard_key, query):
                   f'{query}&' \
                   f'version=3'
         response = requests.get(product).json()
-        save_answer_kafka()
-        # print(product)
-        # print(response)
+        save_answer_kafka(response, page_number)
+
+
+def delivery_report(err, msg):
+    """ Вызывается один раз для каждого полученного сообщения, чтобы указать результат доставки.
+    Запускается с помощью poll() или flush(). """
+    if err is not None:
+        print('Ошибка доставки сообщения: {}'.format(err))
+    else:
+        print('Сообщение, доставленно в {} [{}]'.format(
+            msg.topic(), msg.partition()))
+
+
+def send_msg_async(producer, topic, msg):
+    print("Отправить сообщение асинхронно")
+    producer.produce(
+        topic,
+        msg,
+        callback=lambda err,
+        original_msg=msg: delivery_report(err, original_msg),
+    )
+    producer.flush()
 
 
 # Сохраняет каждый JSON ответ сервера отдельным сообщением в "сыром виде" в топик **wb-category** в Kafka
-def save_answer_kafka():
-    print(1)
+def save_answer_kafka(response, page_number):
+    broker = f"localhost:9092"
+    topic = "wb-category"
 
-    class ExampleProducer:
-        broker = "localhost:9092"
-        topic = "test-topic"
-        producer = None
+    producer = Producer({
+        'bootstrap.servers': broker,
+        'socket.timeout.ms': 100,
+        'api.version.request': 'false',
+        'broker.version.fallback': '0.9.0',
+    })
 
-        def __init__(self):
-            self.producer = Producer({
-                'bootstrap.servers': self.broker,
-                'socket.timeout.ms': 100,
-                'api.version.request': 'false',
-                'broker.version.fallback': '0.9.0',
-            }
-            )
-
-        def delivery_report(self, err, msg):
-            """ Called once for each message produced to indicate delivery result.
-                Triggered by poll() or flush(). """
-            if err is not None:
-                print('Message delivery failed: {}'.format(err))
-            else:
-                print('Message delivered to {} [{}]'.format(
-                    msg.topic(), msg.partition()))
-
-        def send_msg_async(self, msg):
-            print("Send message asynchronously")
-            self.producer.produce(
-                self.topic,
-                msg,
-                callback=lambda err, original_msg=msg: self.delivery_report(err, original_msg
-                                                                            ),
-            )
-            self.producer.flush()
-
-        def send_msg_sync(self, msg):
-            print("Send message synchronously")
-            self.producer.produce(
-                self.topic,
-                msg,
-                callback=lambda err, original_msg=msg: self.delivery_report(
-                    err, original_msg
-                ),
-            )
-            self.producer.flush()
-
-    # SENDING DATA TO KAFKA TOPIC
-    example_producer = ExampleProducer()
-    message = "Hello this message will be sent to the kafka topic."
-    example_producer.send_msg_async(message)
+    # отправка данных в топик Кафка
+    message = f"{response}"
+    send_msg_async(producer, topic, message)
 
 
 if __name__ == '__main__':
     link_to_wildberries = read_conf()
     get_api(link_to_wildberries)
+    # save_answer_kafka()
