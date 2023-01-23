@@ -14,7 +14,9 @@ def read_conf():
 
 
 def get_category_data(subcategory):
-    return subcategory['shardKey'], subcategory['query']
+    if subcategory.get('shardKey') is None:
+        return None, None, None
+    return subcategory['shardKey'], subcategory['query'].split('&')[0], subcategory['query'].split('&')[1]
 
 
 def get_api(url):
@@ -40,40 +42,53 @@ def get_api(url):
         # найти нужную категорию товаров
         if category['pageUrl'] in page_url_category:
             # найти нужную подкатегорию товаров
-            for subcategory in category.get(
-                    'childNodes'):  # возможно прохожу не по всем подкатегориям или прохожу много раз
-                # если подкатегория содержит подкатегории товаров
-                while type(subcategory) is dict and subcategory.get('childNodes') is not None:
-                    subcategory = subcategory.get('childNodes')
-                    for subcategory_2 in subcategory:
-                        # проверка на нужную подкатегорию товаров
-                        if subcategory_2['pageUrl'] == page_url_category[0]:
-                            subcategory_request_data = subcategory_2
-                # если подкатегория не делится подкатегории товаров
-                else:
-                    # чтобы подкатегория которая использовалась в цикле while не выводилась полностью
-                    if type(subcategory) is dict:
-                        # проверка на нужную подкатегорию товаров
-                        if subcategory['pageUrl'] == page_url_category[0]:
-                            subcategory_request_data = subcategory
+            # если подкатегория содержит подкатегории товаров
+            # возможно прохожу не по всем подкатегориям или прохожу много раз
+            if type(category) is dict and category.get('childNodes') is not None:
+                for subcategory in category.get('childNodes'):
+
+                    while subcategory.get('childNodes') is not None:
+                        subcategory = subcategory.get('childNodes')
+                        if type(subcategory) is list:
+                            subcategory = subcategory[0]
+
+                    # проверка на нужную подкатегорию товаров
+                    if subcategory['pageUrl'] == page_url_category[0]:
+                        subcategory_request_data = subcategory
+
+            # если подкатегория не делится подкатегории товаров
+            else:
+                # чтобы подкатегория которая использовалась в цикле while не выводилась полностью
+                if type(category) is dict:
+                    # проверка на нужную подкатегорию товаров
+                    if category['pageUrl'] == page_url_category[0]:
+                        subcategory_request_data = category
     # print(subcategory_request_data)
-    shard_key, query = get_category_data(subcategory_request_data)
-    get_pages(shard_key, query)  # electronic19, subject=523;524;526;527;532;593;844;982;1388;1407;3656;4072
+    shard_key, ext, subject = get_category_data(subcategory_request_data)
+    get_pages(shard_key, ext, subject, page_url_category)
 
 
 # Получает информацию о товарах с первых 5 страниц категории через мобильное API Wildberries
-def get_pages(shard_key, query):
+def get_pages(shard_key, ext, subject, page_url_category):
+    response = requests.get("https://marketing-info.wildberries.ru/marketing-info/api/v6/info?curr=rub")
+    client_params = {p.split('=')[0]: p.split('=')[1] for p in response.json()['xClientInfo'].split('&')}
+    product_url = ""
     for page_number in range(1, 6):
-        product = f'https://catalog.wb.ru/catalog/' \
-                  f'{shard_key}' \
-                  f'/catalog?appType=32&curr=rub&dest=-1029256,-102269,-2162196,-1257786&emp=0&' \
-                  f'ext=91198;91199;164302;176241;177833;388495;396541&' \
-                  f'lang=ru&locale=ru&page={page_number}' \
-                  f'&reg=1&regions=1,4,22,30,31,33,38,40,48,64,66,68,69,70,71,75,80,83&sort=popular&' \
-                  f'spp=30&' \
-                  f'{query}&' \
-                  f'version=3'
-        response = requests.get(product).json()
+        if page_url_category != '/promotions':
+            # dest - это определение региона и центра выдачи товаров, склада (Это может быть направление
+            # или область карты, параметры для выборки из бд, пока неясно, что это за координаты/границы)
+            # spp - Так СПП - это скидка постоянного покупателя. Величина переменная, которая зависит от размера выкупа,
+            # конкретного зарегистрированного покупателя. Но допустим, этот параметр вам нужен. В примере spp=26
+            product_url = f"https://catalog.wb.ru/catalog/{shard_key}/catalog?" \
+                          f"appType={client_params['appType']}&curr={client_params['curr']}" \
+                          f"&dest={client_params['dest']}&emp={client_params['emp']}&{ext}&" \
+                          f"lang={client_params['lang']}&locale={client_params['locale']}&page={page_number}&" \
+                          f"reg={client_params['reg']}&regions={client_params['regions']}&sort=popular&" \
+                          f"spp={client_params['spp']}&{subject}&version={client_params['version']}"
+        elif shard_key is None and subject is None:
+            product_url = "https://www.wildberries.ru/promotions"
+        response = requests.get(product_url).json()
+        print(product_url)
         save_answer_kafka(response, page_number)
 
 
@@ -130,4 +145,5 @@ def save_answer_kafka(response, page_number):
 
 
 if __name__ == '__main__':
-    get_api("https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation")
+    get_api("https://www.wildberries.ru/promotions")
+    # get_api("https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation")

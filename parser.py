@@ -34,7 +34,7 @@ def get_data_from_topic():
             print("Consumer error: {}".format(msg.error()))
             continue
 
-        print('Received message: {}'.format(msg.value().decode('utf-8')))
+        print('Received message: {}'.format(msg.value()))
 
     c.close()
 
