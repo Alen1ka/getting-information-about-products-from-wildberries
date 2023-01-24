@@ -164,6 +164,10 @@ def save_answer_kafka(response, page_number):
 
 
 if __name__ == '__main__':
-    # get_api("https://www.wildberries.ru/promotions")
+    # get_api("https://www.wildberries.ru/promotions") # запрос обычный, но нужно в начало запроса постаавить action,
+    # только где его взять неизвестно
+    # get_api("https://www.wildberries.ru/brands/asics") # обращаться к https://catalog.wb.ru/brands/special/catalog?
+    # и взять brand, в запросе будет идти после appType
+    # get_api("https://www.wildberries.ru/catalog/detyam/odezhda/dlya-devochek/odezhda-dlya-doma")
     # get_api("https://www.wildberries.ru/catalog/detyam/tovary-dlya-malysha/peredvizhenie/avtokresla-detskie")
     get_api("https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation")
