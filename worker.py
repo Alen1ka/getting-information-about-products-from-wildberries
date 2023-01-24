@@ -22,12 +22,12 @@ def get_category_data(subcategory):
 def id_generator(dict_var, page_url_category):
     for k, v in dict_var.items():
         if v == page_url_category:
-            yield v  # возвращает необходимую категорию
-        elif isinstance(v, dict):  # если значение (v) является словарем
+            yield dict_var  # возвращает необходимую категорию
+        elif isinstance(v, dict):  # если значение v является словарем
             for id_val in id_generator(v, page_url_category):
                 yield id_val
-        elif isinstance(v, list):
-            for dict_i in v:
+        elif isinstance(v, list):  # если значение v является списком
+            for dict_i in v:  # прохожу по каждому элементу списка
                 for id_val in id_generator(dict_i, page_url_category):
                     yield id_val
 
@@ -48,7 +48,8 @@ def get_api(url):
                 # pageUrl каждой подкатегории каталога после "/catalog/" (например, /catalog/elektronika)
                 page_url_category.append(page_url_category[0][:i])
 
-    need_category = ''
+    need_category = {}
+    need_subcategory = {}
     # взять данные из подкатегории для последующего запроса о взятии товаров
     catalog = requests.get('https://catalog.wb.ru/menu/v6/api?lang=ru&locale=ru')
     # print(page_url_category)
@@ -57,7 +58,10 @@ def get_api(url):
         if category['pageUrl'] in page_url_category:
             need_category = category
     for _ in id_generator(need_category, page_url_category[0]):
-        print(_)
+        need_subcategory = _
+    print(need_subcategory)
+    shard_key, ext, subject = get_category_data(need_subcategory)
+    get_pages(shard_key, ext, subject, page_url_category)
 
 
 # Получает информацию о товарах с первых 5 страниц категории через мобильное API Wildberries
