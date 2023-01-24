@@ -19,6 +19,19 @@ def get_category_data(subcategory):
     return subcategory['shardKey'], subcategory['query'].split('&')[0], subcategory['query'].split('&')[1]
 
 
+def id_generator(dict_var, page_url_category):
+    for k, v in dict_var.items():
+        if v == page_url_category:
+            yield v  # возвращает необходимую категорию
+        elif isinstance(v, dict):  # если значение (v) является словарем
+            for id_val in id_generator(v, page_url_category):
+                yield id_val
+        elif isinstance(v, list):
+            for dict_i in v:
+                for id_val in id_generator(dict_i, page_url_category):
+                    yield id_val
+
+
 def get_api(url):
     page_url_category = []
     if url.find('https://www.wildberries.ru') != -1:
@@ -35,57 +48,65 @@ def get_api(url):
                 # pageUrl каждой подкатегории каталога после "/catalog/" (например, /catalog/elektronika)
                 page_url_category.append(page_url_category[0][:i])
 
-    subcategory_request_data = ''
+    need_category = ''
     # взять данные из подкатегории для последующего запроса о взятии товаров
     catalog = requests.get('https://catalog.wb.ru/menu/v6/api?lang=ru&locale=ru')
+    # print(page_url_category)
     for category in catalog.json()['data']['catalog']:
         # найти нужную категорию товаров
         if category['pageUrl'] in page_url_category:
-            while type(category) is dict and category.get('childNodes') is not None:
-                category = category.get('childNodes')
-                if type(category) is list:
-                    category = category[0]
-                # найти нужную категорию товаров
-                # print(category[0])
-                if category['pageUrl'] in page_url_category:
-                    print(category)
-
-                print(category)
-
-            '''# найти нужную подкатегорию товаров
+            need_category = category
+    for _ in id_generator(need_category, page_url_category[0]):
+        print(_)
+    '''for category in catalog.json()['data']['catalog']:
+        # найти нужную категорию товаров
+        if category['pageUrl'] in page_url_category:
+            # найти нужную подкатегорию товаров
             # если подкатегория содержит подкатегории товаров
             # возможно прохожу не по всем подкатегориям или прохожу много раз
             if type(category) is dict and category.get('childNodes') is not None:
                 for subcategory in category.get('childNodes'):
-
-                    while type(category) is dict and subcategory.get('childNodes') is not None:
+                    #print(subcategory['pageUrl'])
+                    while subcategory.get('childNodes') is not None:
+                        print(subcategory['pageUrl'])
                         subcategory = subcategory.get('childNodes')
-
                         if type(subcategory) is list:
                             subcategory = subcategory[0]
-                        print(subcategory)
-                    #######
+
+                        # print(subcategory['pageUrl'])
+                        # print(page_url_category[0])
+                        # проверка на нужную подкатегорию товаров
+                        if subcategory['pageUrl'] == page_url_category[0]:
+                            subcategory_request_data = subcategory
+                            # print(subcategory)
+
+                    # если подкатегория не делится подкатегории товаров
                     else:
+
                         # чтобы подкатегория которая использовалась в цикле while не выводилась полностью
-                        if type(category) is dict:
+                        if type(subcategory) is dict:
+                            print(subcategory['pageUrl'])
                             # проверка на нужную подкатегорию товаров
-                            if category['pageUrl'] == page_url_category[0]:
-                                subcategory_request_data = category
-                    #######
+                            if subcategory['pageUrl'] == page_url_category[0]:
+                                subcategory_request_data = subcategory
+
                     # проверка на нужную подкатегорию товаров
                     if subcategory['pageUrl'] == page_url_category[0]:
                         subcategory_request_data = subcategory
 
             # если подкатегория не делится подкатегории товаров
             else:
+                #print(category)
                 # чтобы подкатегория которая использовалась в цикле while не выводилась полностью
                 if type(category) is dict:
+
                     # проверка на нужную подкатегорию товаров
                     if category['pageUrl'] == page_url_category[0]:
-                        subcategory_request_data = category'''
-    print(subcategory_request_data)
+                        subcategory_request_data = category
+
+    # print(subcategory_request_data)
     shard_key, ext, subject = get_category_data(subcategory_request_data)
-    get_pages(shard_key, ext, subject, page_url_category)
+    get_pages(shard_key, ext, subject, page_url_category)'''
 
 
 # Получает информацию о товарах с первых 5 страниц категории через мобильное API Wildberries
