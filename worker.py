@@ -47,11 +47,20 @@ def get_api(url):
             if type(category) is dict and category.get('childNodes') is not None:
                 for subcategory in category.get('childNodes'):
 
-                    while subcategory.get('childNodes') is not None:
+                    while type(category) is dict and subcategory.get('childNodes') is not None:
                         subcategory = subcategory.get('childNodes')
+
                         if type(subcategory) is list:
                             subcategory = subcategory[0]
-
+                        print(subcategory)
+                    #######
+                    else:
+                        # чтобы подкатегория которая использовалась в цикле while не выводилась полностью
+                        if type(category) is dict:
+                            # проверка на нужную подкатегорию товаров
+                            if category['pageUrl'] == page_url_category[0]:
+                                subcategory_request_data = category
+                    #######
                     # проверка на нужную подкатегорию товаров
                     if subcategory['pageUrl'] == page_url_category[0]:
                         subcategory_request_data = subcategory
@@ -63,7 +72,7 @@ def get_api(url):
                     # проверка на нужную подкатегорию товаров
                     if category['pageUrl'] == page_url_category[0]:
                         subcategory_request_data = category
-    # print(subcategory_request_data)
+    print(subcategory_request_data)
     shard_key, ext, subject = get_category_data(subcategory_request_data)
     get_pages(shard_key, ext, subject, page_url_category)
 
@@ -145,5 +154,6 @@ def save_answer_kafka(response, page_number):
 
 
 if __name__ == '__main__':
-    get_api("https://www.wildberries.ru/promotions")
+    # get_api("https://www.wildberries.ru/promotions")
+    get_api("https://www.wildberries.ru/catalog/detyam/tovary-dlya-malysha/peredvizhenie/avtokresla-detskie")
     # get_api("https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation")
