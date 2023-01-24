@@ -41,7 +41,18 @@ def get_api(url):
     for category in catalog.json()['data']['catalog']:
         # найти нужную категорию товаров
         if category['pageUrl'] in page_url_category:
-            # найти нужную подкатегорию товаров
+            while type(category) is dict and category.get('childNodes') is not None:
+                category = category.get('childNodes')
+                if type(category) is list:
+                    category = category[0]
+                # найти нужную категорию товаров
+                # print(category[0])
+                if category['pageUrl'] in page_url_category:
+                    print(category)
+
+                print(category)
+
+            '''# найти нужную подкатегорию товаров
             # если подкатегория содержит подкатегории товаров
             # возможно прохожу не по всем подкатегориям или прохожу много раз
             if type(category) is dict and category.get('childNodes') is not None:
@@ -71,7 +82,7 @@ def get_api(url):
                 if type(category) is dict:
                     # проверка на нужную подкатегорию товаров
                     if category['pageUrl'] == page_url_category[0]:
-                        subcategory_request_data = category
+                        subcategory_request_data = category'''
     print(subcategory_request_data)
     shard_key, ext, subject = get_category_data(subcategory_request_data)
     get_pages(shard_key, ext, subject, page_url_category)
