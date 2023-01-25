@@ -1,3 +1,5 @@
-request.doc
 venv
 .idea
+__pycache__
+request.doc
+test.txt
