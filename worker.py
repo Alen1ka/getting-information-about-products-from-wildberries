@@ -5,7 +5,7 @@ from _parser import get_data_from_topic
 
 
 def initial_settings():
-    """ Получение настроек из файла """
+    """Получение настроек из файла"""
     f = open('conf.json')
     data = json.load(f)
     server = data["default"]["bootstrap.servers"]
@@ -15,7 +15,7 @@ def initial_settings():
 
 
 def getting_info_about_wildberries_products(url):
-    """ Получение информации о товарах маркетплейса Wildberries """
+    """Получение информации о товарах маркетплейса Wildberries"""
     need_subcategory, page_url_category = find_the_right_category(url)
     # достать необходимые для запроса данные
     shard_key, kind, subject, ext = get_category_data(need_subcategory)
@@ -24,7 +24,7 @@ def getting_info_about_wildberries_products(url):
 
 
 def find_the_right_category(url):
-    """ Найти нужную категорию товаров """
+    """Найти нужную категорию товаров"""
     page_url_category = []
     if url.find('https://www.wildberries.ru') != -1:
         # pageUrl подкатегории каталога
@@ -56,7 +56,7 @@ def find_the_right_category(url):
 
 
 def find_the_right_subcategory(dict_var, page_url_category):
-    """ Найти нужную подкатегорию товаров """
+    """Найти нужную подкатегорию товаров"""
     for k, v in dict_var.items():
         if v == page_url_category:
             yield dict_var  # возвращает необходимую категорию
@@ -70,7 +70,7 @@ def find_the_right_subcategory(dict_var, page_url_category):
 
 
 def get_category_data(subcategory):
-    """ Получение данных о категории товара """
+    """Получение данных о категории товара"""
     if subcategory.get('shardKey') is None:
         return None, None, None, None
 
@@ -122,8 +122,8 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
 
 
 def delivery_report(err, msg):
-    """ Вызывается один раз для каждого полученного сообщения, чтобы указать результат доставки.
-    Запускается с помощью poll() или flush(). """
+    """Вызывается один раз для каждого полученного сообщения, чтобы указать результат доставки.
+    Запускается с помощью poll() или flush()."""
     if err is not None:
         print('Ошибка доставки сообщения: {}'.format(err))
     else:
