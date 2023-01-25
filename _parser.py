@@ -24,19 +24,21 @@ def get_data_from_topic():
     })
 
     c.subscribe([topic_category])
-
-    while True:
-        msg = c.poll(1.0)
+    s = 0
+    while s == 0:
+        msg = c.poll(1.0)  # запрашивает данные каждую миллисекунду
 
         if msg is None:
             continue
         if msg.error():
             print("Consumer error: {}".format(msg.error()))
             continue
-
-        print('Received message: {}'.format(msg.value()))
-
-    c.close()
+        print('Received message: i')
+        # print('Received message: {}'.format(msg.value()))
+        with open("test.txt", "ab") as myfile:
+            myfile.write(msg.value())
+            c.close()
+            s = 1
 
 
 if __name__ == '__main__':
