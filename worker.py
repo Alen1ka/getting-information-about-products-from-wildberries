@@ -101,7 +101,7 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
     response = requests.get("https://marketing-info.wildberries.ru/marketing-info/api/v6/info?curr=rub")
     client_params = {p.split('=')[0]: p.split('=')[1] for p in response.json()['xClientInfo'].split('&')}
     product_url = ""
-    for page_number in range(1, 6):
+    for page_number in range(1, 2):
         if page_url_category != '/promotions':
             # dest - это определение региона и центра выдачи товаров, склада (Это может быть направление
             # или область карты, параметры для выборки из бд, пока неясно, что это за координаты/границы)
@@ -150,6 +150,12 @@ def save_answer_kafka(response, page_number):
 
 
 if __name__ == '__main__':
+    # data_structure = open("test.json", encoding='utf-8').readlines()
+    # pprint.pprint(data_structure)
+    # f = json.dumps(data_structure, indent=2)
+    # with open("test2.txt", "a") as myfile:
+    #   myfile.write(f)
+    # print(f)
     # Принимает на вход по API адрес категории на wildberries.ru
 
     # getting_info_about_wildberries_products(

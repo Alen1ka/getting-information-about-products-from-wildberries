@@ -1,5 +1,6 @@
 from confluent_kafka import Consumer
 import json
+import pprint
 
 
 # Принимает на вход по API адрес категории на wildberries.ru
@@ -35,10 +36,25 @@ def get_data_from_topic():
             continue
         print('Received message: i')
         # print('Received message: {}'.format(msg.value()))
-        with open("test.txt", "ab") as myfile:
-            myfile.write(msg.value())
-            c.close()
-            s = 1
+        save_product_information(msg.value())
+        c.close()
+        s = 1
+
+
+def save_product_information(msg):
+    msg = msg.decode('utf-8')
+    products = eval(msg)['data']['products']
+    for product in products:
+        # print(product)
+        print(product['id'])
+        print(product['name'])
+        print(product['salePriceU']/100)
+        print(product['sale'])
+    with open("test2.txt", "w", encoding="utf-8") as myfile:
+        # pprint.pprint(msg.value())
+        # f = json.dumps(msg, indent=2)
+        myfile.write(str(products))
+        # print(msg)
 
 
 if __name__ == '__main__':
