@@ -3,3 +3,5 @@ venv
 __pycache__
 request.doc
 test.txt
+test2.txt
+test.json
