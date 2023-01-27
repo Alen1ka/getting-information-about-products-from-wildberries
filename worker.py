@@ -3,6 +3,15 @@ import json
 from confluent_kafka import Producer
 from _parser import get_data_from_topic
 
+from flask import Flask, request
+from flask_restful import Api, Resource, reqparse
+
+app = Flask(__name__)
+api = Api(app)
+
+parser = reqparse.RequestParser()
+parser.add_argument('url', type=str, help='Rate to charge for this resource')
+
 
 def initial_settings():
     """Получение настроек из файла"""
@@ -14,13 +23,20 @@ def initial_settings():
     return server, topic_category
 
 
-def getting_info_about_wildberries_products(url):
-    """Получение информации о товарах маркетплейса Wildberries"""
-    need_subcategory, page_url_category = find_the_right_category(url)
-    # достать необходимые для запроса данные
-    shard_key, kind, subject, ext = get_category_data(need_subcategory)
-    # сделать запрос и взять первые пять страниц
-    getting_product_pages(shard_key, kind, subject, ext, page_url_category)
+# @app.route('/api/get_info_wb/<url>', methods=['GET'])
+class GetInfoWb(Resource):
+    def put(self):
+        """Получение информации о товарах маркетплейса Wildberries"""
+        url = parser.parse_args()['url']
+        need_subcategory, page_url_category = find_the_right_category(url)
+        # достать необходимые для запроса данные
+        shard_key, kind, subject, ext = get_category_data(need_subcategory)
+        # сделать запрос и взять первые пять страниц
+        getting_product_pages(shard_key, kind, subject, ext, page_url_category)
+        return "OK"
+
+
+api.add_resource(GetInfoWb, '/api/get_info_wb')
 
 
 def find_the_right_category(url):
@@ -150,6 +166,7 @@ def save_answer_kafka(response, page_number):
 
 
 if __name__ == '__main__':
+    app.run(host="127.0.0.1", port=5000, debug=True)
     # data_structure = open("test.json", encoding='utf-8').readlines()
     # pprint.pprint(data_structure)
     # f = json.dumps(data_structure, indent=2)
@@ -171,5 +188,5 @@ if __name__ == '__main__':
 
     # getting_info_about_wildberries_products(
     # "https://www.wildberries.ru/catalog/detyam/tovary-dlya-malysha/peredvizhenie/avtokresla-detskie")
-    getting_info_about_wildberries_products(
-        "https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation")
+    # getting_info_about_wildberries_products(
+    #   "https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation")
