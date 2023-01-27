@@ -6,22 +6,18 @@ import json
 from confluent_kafka import Producer
 from _parser import get_data_from_topic
 
-from flask import Flask
-from flask_restful import Api, Resource, reqparse
+from flask import Flask, request
 
 app = Flask(__name__)
-api = Api(app)
 
-parser = reqparse.RequestParser()
-parser.add_argument('url', type=str)
-
-LOG_DIR = ''
+LOG_DIR = 'D:\python\getting information about products from wildberries'
 
 logger = logging.getLogger("main")
 logger.setLevel(logging.DEBUG)
 
-if not os.path.exists(LOG_DUR):
-        os.makedirs(LOG_DIR)
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
 
 def initial_settings():
     """Получение настроек из файла"""
@@ -33,20 +29,18 @@ def initial_settings():
     return server, topic_category
 
 
-# @app.route('/api/get_info_wb/<url>', methods=['GET'])
-class GetInfoWb(Resource):
-    def post(self):
-        """Получение информации о товарах маркетплейса Wildberries"""
-        url = parser.parse_args()['url']
-        need_subcategory, page_url_category = find_the_right_category(url)
-        # достать необходимые для запроса данные
-        shard_key, kind, subject, ext = get_category_data(need_subcategory)
-        # сделать запрос и взять первые пять страниц
-        getting_product_pages(shard_key, kind, subject, ext, page_url_category)
-        return "OK"
-
-
-api.add_resource(GetInfoWb, '/api/get_info_wb')
+@app.route('/api/get_info_wb/', methods=['PUT'])
+def get_info_wb():
+    """Получение информации о товарах маркетплейса Wildberries"""
+    # print(request.data)
+    url = json.loads(request.data)["url"]
+    print(url)
+    need_subcategory, page_url_category = find_the_right_category(url)
+    # достать необходимые для запроса данные
+    shard_key, kind, subject, ext = get_category_data(need_subcategory)
+    # сделать запрос и взять первые пять страниц
+    getting_product_pages(shard_key, kind, subject, ext, page_url_category)
+    return "OK"
 
 
 def find_the_right_category(url):
