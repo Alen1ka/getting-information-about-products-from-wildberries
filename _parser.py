@@ -1,6 +1,5 @@
 from confluent_kafka import Consumer
 import json
-import pprint
 
 
 # Принимает на вход по API адрес категории на wildberries.ru

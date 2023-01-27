@@ -1,17 +1,27 @@
+import logging
+import os.path
+
 import requests
 import json
 from confluent_kafka import Producer
 from _parser import get_data_from_topic
 
-from flask import Flask, request
+from flask import Flask
 from flask_restful import Api, Resource, reqparse
 
 app = Flask(__name__)
 api = Api(app)
 
 parser = reqparse.RequestParser()
-parser.add_argument('url', type=str, help='Rate to charge for this resource')
+parser.add_argument('url', type=str)
 
+LOG_DIR = ''
+
+logger = logging.getLogger("main")
+logger.setLevel(logging.DEBUG)
+
+if not os.path.exists(LOG_DUR):
+        os.makedirs(LOG_DIR)
 
 def initial_settings():
     """Получение настроек из файла"""
@@ -25,7 +35,7 @@ def initial_settings():
 
 # @app.route('/api/get_info_wb/<url>', methods=['GET'])
 class GetInfoWb(Resource):
-    def put(self):
+    def post(self):
         """Получение информации о товарах маркетплейса Wildberries"""
         url = parser.parse_args()['url']
         need_subcategory, page_url_category = find_the_right_category(url)
@@ -146,7 +156,6 @@ def delivery_report(err, msg):
         print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))  # , msg.offcet()
 
 
-#
 def save_answer_kafka(response, page_number):
     """Сохраняет каждый JSON ответ сервера отдельным сообщением в "сыром виде" в топик **wb-category** в Kafka"""
     server, topic_category = initial_settings()
