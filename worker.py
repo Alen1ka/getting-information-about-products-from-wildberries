@@ -1,32 +1,34 @@
-import logging
 import os.path
-
+import logging
 import requests
+import yaml
 import json
 from confluent_kafka import Producer
-from _parser import get_data_from_topic
+# from parser_products import get_data_from_topic
 
-from flask import Flask, request
 
-app = Flask(__name__)
+def read_config():
+    """Получение настроек из файла"""
+    with open('config.yaml') as f:
+        read_data = yaml.load(f, Loader=yaml.FullLoader)
+    return read_data
+
+
+SERVICE_NAME = "data-aggregator"
+config = read_config()
 
 LOG_DIR = 'D:\python\getting information about products from wildberries'
-
-logger = logging.getLogger("main")
-logger.setLevel(logging.DEBUG)
-
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
+logging.basicConfig(level=logging.getLevelName(config["LOGGING_LEVEL"]), format=config["LOGGING_FORMAT"])
+logger = logging.getLogger(__name__)
 
+app = faust.App(SERVICE_NAME, broker=config["KAFKA_BROKER"], value_serializer='raw', web_host=config["WEB_HOST"],
+                web_port=config["WEB_PORT"])
+processed_data_topic = app.topic(config["PRODUCER_DATA_TOPIC"], partitions=1)
+aggregated_data_topic = app.topic(config["CONSUMER_DATA_TOPIC"], partitions=1)
 
-def initial_settings():
-    """Получение настроек из файла"""
-    f = open('conf.json')
-    data = json.load(f)
-    server = data["default"]["bootstrap.servers"]
-    topic_category = data["default"]["topic_category"]
-    f.close()
-    return server, topic_category
+average_table = app.Table('average', default=dict)
 
 
 @app.route('/api/get_info_wb/', methods=['PUT'])
@@ -137,8 +139,8 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
             product_url = "https://www.wildberries.ru/promotions"
         response = requests.get(product_url).json()
         print(product_url)
-        save_answer_kafka(response, page_number)
-        get_data_from_topic()
+        save_answer_kafka(response, config["PRODUCER_DATA_TOPIC"])
+        # get_data_from_topic()
 
 
 def delivery_report(err, msg):
@@ -150,18 +152,17 @@ def delivery_report(err, msg):
         print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))  # , msg.offcet()
 
 
-def save_answer_kafka(response, page_number):
+def save_answer_kafka(response, name_topic):
     """Сохраняет каждый JSON ответ сервера отдельным сообщением в "сыром виде" в топик **wb-category** в Kafka"""
-    server, topic_category = initial_settings()
     # передача продюсеру названия сервера
     p = Producer({
-        'bootstrap.servers': server
+        'bootstrap.servers': config["KAFKA_BROKER"]
     })
 
     # Добавление сообщения в очередь сообщений в топик (отправка брокеру)
     # callback - используется функцией pull или flush для последующего чтения данных отслеживания сообщения:
     # было ли успешно доставлено или нет
-    p.produce(topic_category, f'{response}', callback=delivery_report)
+    p.produce(name_topic, f'{response}', callback=delivery_report)
 
     # Дожидается доставки всех оставшихся сообщений и отчета о доставке
     # Если топик не создан, то он создается c 1 партицей по умолчанию (1 копия данных помещенных в топик)
@@ -169,7 +170,8 @@ def save_answer_kafka(response, page_number):
 
 
 if __name__ == '__main__':
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    config = read_config()
+    app.run(host=config["WEB_HOST"], port=config["WEB_PORT"], debug=True)
     # data_structure = open("test.json", encoding='utf-8').readlines()
     # pprint.pprint(data_structure)
     # f = json.dumps(data_structure, indent=2)
