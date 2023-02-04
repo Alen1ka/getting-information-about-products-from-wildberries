@@ -1,34 +1,26 @@
-import os.path
-import logging
+from loguru import logger as log
 import requests
 import yaml
 import json
 from confluent_kafka import Producer
-# from parser_products import get_data_from_topic
+from flask import Flask, request
+app = Flask(__name__)
 
 
 def read_config():
     """Получение настроек из файла"""
-    with open('config.yaml') as f:
+    with open('../config.yaml') as f:
         read_data = yaml.load(f, Loader=yaml.FullLoader)
     return read_data
 
 
-SERVICE_NAME = "data-aggregator"
 config = read_config()
 
-LOG_DIR = 'D:\python\getting information about products from wildberries'
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR)
-logging.basicConfig(level=logging.getLevelName(config["LOGGING_LEVEL"]), format=config["LOGGING_FORMAT"])
-logger = logging.getLogger(__name__)
-
-app = faust.App(SERVICE_NAME, broker=config["KAFKA_BROKER"], value_serializer='raw', web_host=config["WEB_HOST"],
-                web_port=config["WEB_PORT"])
-processed_data_topic = app.topic(config["PRODUCER_DATA_TOPIC"], partitions=1)
-aggregated_data_topic = app.topic(config["CONSUMER_DATA_TOPIC"], partitions=1)
-
-average_table = app.Table('average', default=dict)
+log.add('.\\log\\getting-information-about-products-from-wildberries {time:DD-MM-YYYY}.log',
+        format=config['LOGGING_FORMAT'],
+        rotation="00:01",  # Новый файл создается каждый день для удобства отслеживания
+        retention=f"{config['LOGGING_RETENTION']} days", compression="zip",  # Файл архивируется через некоторое время
+        level=config['LOGGING_LEVEL'])
 
 
 @app.route('/api/get_info_wb/', methods=['PUT'])

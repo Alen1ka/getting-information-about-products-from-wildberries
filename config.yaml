@@ -1,13 +1,12 @@
-LOGGING_LEVEL: 'INFO'
-LOGGING_FORMAT: '%(asctime)-15s | %(levelname)s | %(filename)s | %(lineno)d: %(message)s'
+LOGGING_LEVEL: 'INFO' # логи начиная с какого уровня следует выводить в файл
+LOGGING_FORMAT: '{time:HH:mm:ss.SSSZ} | [{level}]\t| {message}' # оформление лог файла - в какой последовательности выводить лог файл
+LOGGING_RETENTION: 7 # время жизни лог файла
 
-WEB_HOST: '127.0.0.1'
-WEB_PORT: 5000
+WEB_HOST: '127.0.0.1' # по какому адресу запускается программа и куда надо отправлять категорию wildberries
+WEB_PORT: 1234 # порт программы
 
-KAFKA_BROKER: "127.0.0.1:9092"
-# server response about the product
-PRODUCER_DATA_TOPIC: "wb-category"
-# information about each product
-CONSUMER_DATA_TOPIC: "wb-products"
+KAFKA_BROKER: "127.0.0.1:9092"  # server response about the product
+PRODUCER_DATA_TOPIC: "wb-category" # название категории в kafka, где хранятся товары с данными в виде словаря
+CONSUMER_DATA_TOPIC: "wb-products" # с information about each product на kafka
 
 AUTO_OFFSET_RESET: "earliest"
