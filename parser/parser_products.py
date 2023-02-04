@@ -1,7 +1,7 @@
 from confluent_kafka import Producer, Consumer
-from loguru import logger as log
 import datetime
 import yaml
+import logging
 
 
 def read_config():
@@ -12,11 +12,11 @@ def read_config():
 
 
 config = read_config()
-log.add('.\\log\\getting-information-about-products-from-wildberries {time:DD-MM-YYYY}.log',
-        format=config['LOGGING_FORMAT'],
-        rotation="00:01",  # Новый файл создается каждый день для удобства отслеживания
-        retention=f"{config['LOGGING_RETENTION']} days", compression="zip",  # Файл архивируется через некоторое время
-        level=config['LOGGING_LEVEL'])
+
+logging.basicConfig(filename='log_parser.log', filemode='a',
+                    format=config['LOGGING_FORMAT'],
+                    datefmt=config['LOGGING_DATEFMT'],
+                    level=logging.DEBUG)
 
 
 def delivery_report(err, msg):
