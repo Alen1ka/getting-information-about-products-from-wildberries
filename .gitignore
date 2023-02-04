@@ -5,3 +5,5 @@ request.doc
 test.txt
 test2.txt
 test.json
+parser/log_parser.log
+worker/log_worker.log
