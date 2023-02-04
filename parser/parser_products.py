@@ -25,7 +25,7 @@ def delivery_report(err, msg):
     if err is not None:
         print('Ошибка доставки сообщения: {}'.format(err))
     else:
-        print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))  # , msg.offcet()
+        print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))
 
 
 def save_answer_kafka(response, name_topic):
@@ -68,11 +68,12 @@ def get_data_from_topic():
         print('Received message: i')
         # print('Received message: {}'.format(msg.value()))
         time_of_receipt = datetime.datetime.now()
-        save_product_information(msg.value(), time_of_receipt, config)
+        parse_products(msg.value(), time_of_receipt, config)
         c.close()
 
 
-def save_product_information(msg, time_of_receipt, config):
+def parse_products(msg, time_of_receipt, config):
+    """Парсинг товаров и отправка данных о каждом товаре в функцию сохранения товаров"""
     msg = msg.decode('utf-8')
     products = eval(msg)['data']['products']
     for product in products:

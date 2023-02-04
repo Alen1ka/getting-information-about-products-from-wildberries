@@ -5,8 +5,8 @@ LOGGING_RETENTION: 7 # время жизни лог файла
 WEB_HOST: '127.0.0.1' # по какому адресу запускается программа и куда надо отправлять категорию wildberries
 WEB_PORT: 1234 # порт программы
 
-KAFKA_BROKER: "127.0.0.1:9092"  # server response about the product
+KAFKA_BROKER: "127.0.0.1:9092"  # серевер брокера Kafka с топиками
 PRODUCER_DATA_TOPIC: "wb-category" # название категории в kafka, где хранятся товары с данными в виде словаря
-CONSUMER_DATA_TOPIC: "wb-products" # с information about each product на kafka
+CONSUMER_DATA_TOPIC: "wb-products" #  название категории в kafka, где хранятся данные отдельно в виде словаря
 
-AUTO_OFFSET_RESET: "earliest"
+AUTO_OFFSET_RESET: "earliest" # установить потребителя на самое раннее смещение

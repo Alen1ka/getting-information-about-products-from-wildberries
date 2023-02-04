@@ -1,0 +1,15 @@
+# установка базового образа
+FROM python:3.9-slim-buster
+
+# обновление и установка зависимостей
+RUN apt-get update
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# копирование всех файлов, включая зависимости, в рабочую директорию
+COPY . /home/alena/python/getting-information-about-products-from-wildberries/parser
+# установка рабочей директории в контейнере
+WORKDIR /home/alena/python/getting-information-about-products-from-wildberries/parser
+
+# команда, выполняемая при запуске контейнера
+CMD ["python", "parser_products.py"]
