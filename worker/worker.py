@@ -10,7 +10,8 @@ app = Flask(__name__)
 
 def read_config():
     """Получение настроек из файла"""
-    with open('../config.yaml') as f:
+    print("конфиг")
+    with open('config.yaml') as f:
         read_data = yaml.load(f, Loader=yaml.FullLoader)
     return read_data
 
@@ -26,6 +27,7 @@ logging.basicConfig(filename='worker.log', filemode='a',
 @app.route('/api/get_info_wb/', methods=['PUT'])
 def get_info_wb():
     """Получение информации о товарах маркетплейса Wildberries"""
+    print("Зашли по api")
     # print(request.data)
     url = json.loads(request.data)["url"]
     print(url)
@@ -163,6 +165,7 @@ def save_answer_kafka(response, name_topic):
 
 if __name__ == '__main__':
     config = read_config()
+    print("RUN")
     app.run(host=config["WEB_HOST"], port=config["WEB_PORT"], debug=True)
     # data_structure = open("test.json", encoding='utf-8').readlines()
     # pprint.pprint(data_structure)

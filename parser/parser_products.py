@@ -6,7 +6,7 @@ import logging
 
 def read_config():
     """Получение настроек из файла"""
-    with open('../config.yaml') as f:
+    with open('config.yaml') as f:
         read_data = yaml.load(f, Loader=yaml.FullLoader)
     return read_data
 
