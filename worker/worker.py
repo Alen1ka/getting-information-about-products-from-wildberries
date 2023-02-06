@@ -169,7 +169,7 @@ def save_answer_kafka(response, name_topic):
 
 
 if __name__ == '__main__':
-    app.run(host=config["WEB_HOST"], port=config["WEB_PORT"], debug=True)
+    app.run(host=config["WEB_HOST"], debug=True)
     # data_structure = open("test.json", encoding='utf-8').readlines()
     # pprint.pprint(data_structure)
     # f = json.dumps(data_structure, indent=2)
