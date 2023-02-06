@@ -10,9 +10,12 @@ app = Flask(__name__)
 
 def read_config():
     """Получение настроек из файла"""
-    print("конфиг")
-    with open('config.yaml') as f:
-        read_data = yaml.load(f, Loader=yaml.FullLoader)
+    try:
+        with open('config.yaml') as f:
+            read_data = yaml.load(f, Loader=yaml.FullLoader)
+            logging.debug("Получены настройки из файла")
+    except Exception as error:
+        logging.debug(error)
     return read_data
 
 
@@ -27,16 +30,18 @@ logging.basicConfig(filename='worker.log', filemode='a',
 @app.route('/api/get_info_wb/', methods=['PUT'])
 def get_info_wb():
     """Получение информации о товарах маркетплейса Wildberries"""
-    print("Зашли по api")
-    # print(request.data)
-    url = json.loads(request.data)["url"]
-    print(url)
-    need_subcategory, page_url_category = find_the_right_category(url)
-    # достать необходимые для запроса данные
-    shard_key, kind, subject, ext = get_category_data(need_subcategory)
-    # сделать запрос и взять первые пять страниц
-    getting_product_pages(shard_key, kind, subject, ext, page_url_category)
-    return "OK"
+    try:
+        url = json.loads(request.data)["url"]
+        logging.debug(f"Получена ссылка: {url}")
+        need_subcategory, page_url_category = find_the_right_category(url)
+        # достать необходимые для запроса данные
+        shard_key, kind, subject, ext = get_category_data(need_subcategory)
+        # сделать запрос и взять первые пять страниц
+        getting_product_pages(shard_key, kind, subject, ext, page_url_category)
+    except Exception as error:
+        logging.debug(error)
+    logging.debug("Данные отправлены")
+    return "Данные отправлены"
 
 
 def find_the_right_category(url):
@@ -132,7 +137,7 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
         elif shard_key is None and subject is None:
             product_url = "https://www.wildberries.ru/promotions"
         response = requests.get(product_url).json()
-        print(product_url)
+        logging.debug(f"Получены данные о товарах с {page_number} страницы")
         save_answer_kafka(response, config["PRODUCER_DATA_TOPIC"])
         # get_data_from_topic()
 
@@ -141,9 +146,9 @@ def delivery_report(err, msg):
     """Вызывается один раз для каждого полученного сообщения, чтобы указать результат доставки.
     Запускается с помощью poll() или flush()."""
     if err is not None:
-        print('Ошибка доставки сообщения: {}'.format(err))
+        logging.debug('Ошибка доставки сообщения: {}'.format(err))
     else:
-        print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))  # , msg.offcet()
+        logging.debug('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))  # , msg.offcet()
 
 
 def save_answer_kafka(response, name_topic):
@@ -164,8 +169,6 @@ def save_answer_kafka(response, name_topic):
 
 
 if __name__ == '__main__':
-    config = read_config()
-    print("RUN")
     app.run(host=config["WEB_HOST"], port=config["WEB_PORT"], debug=True)
     # data_structure = open("test.json", encoding='utf-8').readlines()
     # pprint.pprint(data_structure)
