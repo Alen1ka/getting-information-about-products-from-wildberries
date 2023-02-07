@@ -1,8 +1,25 @@
-version: '1'
-
+version: '3'
 services:
-  app:
-    container_name: app_container
-    build: worker/
+  flask:
+    # Путь до Dockerfile
+    build: ./app
+    # Имя для создаваемого контейнера
+    container_name: app-flask
+    # Создание переменных окружения в контейнере
+    environment:
+      # для отладки (при запуске в релиз убрать!)
+      - FLASK_ENV=development
+      ## Позволяет отслеживать процесс работы приложения в командной строке
+      - PYTHONUNBUFFERED=True                   
+      ##
+    # Перезапускаем сервис в случае падения 
+    restart: on-failure
+    # Прокладывам путь для файлов. Все файлы, которые хранятся у вас в 
+    # директории ./backend, появятся в директории контейнера /backend
+    volumes:
+      - ./app:/app
+    # Открываем порт в контейнер
+    # Порт, который будет смотреть наружу : порт который используется внутри контейнера
     ports:
-      - 5000:5000
+      - "5000:5000"
+    command: python app.py

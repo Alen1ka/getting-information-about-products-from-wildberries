@@ -1,21 +1,12 @@
-# start by pulling the python image
-FROM nginx:stable-alpine
-
-# copy the requirements file into the image
-COPY ./requirements.txt /app/requirements.txt
-
-# switch working directory
+# Выкачиваем из dockerhub образ с python версии 3.9
+FROM python:3.9
+# Устанавливаем рабочую директорию для проекта в контейнере
 WORKDIR /app
-
-# install the dependencies and packages in the requirements file
-RUN pip install -r requirements.txt
-
-# copy every content from the local file to the image
+# Скачиваем/обновляем необходимые библиотеки для проекта 
+COPY requirements.txt /app
+RUN pip3 install --upgrade pip -r requirements.txt
+# |ВАЖНЫЙ МОМЕНТ| копируем содержимое папки, где находится Dockerfile, 
+# в рабочую директорию контейнера
 COPY . /app
-
-# configure the container to run in an executed manner
-ENTRYPOINT ["python"]
-
-CMD ["app.py"]
-
+# Устанавливаем порт, который будет использоваться для сервера
 EXPOSE 5000
