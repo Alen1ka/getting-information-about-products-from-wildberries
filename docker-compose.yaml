@@ -3,6 +3,6 @@ version: '1'
 services:
   app:
     container_name: app_container
-    build: .
+    build: worker/
     ports:
       - 5000:5000
