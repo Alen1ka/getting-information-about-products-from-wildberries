@@ -27,8 +27,9 @@ logging.basicConfig(filename='worker.log', filemode='a',
                     level=logging.DEBUG)
 
 
-@app.route('/api/get_info_wb/', methods=['PUT'])
+@app.route('/api/get_info_wb/')
 def get_info_wb():
+    return "успех"
     """Получение информации о товарах маркетплейса Wildberries"""
     try:
         url = json.loads(request.data)["url"]

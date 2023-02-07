@@ -13,3 +13,5 @@ COPY . /home/alena/python/getting-information-about-products-from-wildberries/wo
 WORKDIR /home/alena/python/getting-information-about-products-from-wildberries/worker
 
 CMD ["python", "worker.py"]
+
+EXPOSE 8000
