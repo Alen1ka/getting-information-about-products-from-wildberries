@@ -1,3 +1,4 @@
+
 LOGGING_DATEFMT: '%d-%b-%y %H:%M:%S %p' # в какой последовательности записывать дату и время в лог файл
 LOGGING_FORMAT: '%(asctime)s %(msecs)d- %(process)d -%(levelname)s - %(message)s' # оформление лог файла - в какой последовательности выводить лог файл
 
