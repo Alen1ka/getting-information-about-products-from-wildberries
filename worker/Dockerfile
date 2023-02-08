@@ -1,17 +1,14 @@
+# установка базового образа
 FROM python:3.9-slim-buster
 
-RUN apt-get update
-RUN pip install --upgrade pip
-RUN pip install PyYAML
-RUN pip install requests
-RUN pip install Flask
-RUN pip install confluent_kafka
-
-# копирование всех файлов, включая зависимости, в рабочую директорию
-COPY . /home/alena/python/getting-information-about-products-from-wildberries/worker
 # установка рабочей директории в контейнере
-WORKDIR /home/alena/python/getting-information-about-products-from-wildberries/worker
+WORKDIR /parser
 
-CMD ["python", "worker.py"]
+# копирование всех файлов (папку с Dockerfile), включая файл с зависимостями, в рабочую директорию
+COPY . /parser
 
-EXPOSE 8000
+# Скачиваем/обновляем необходимые библиотеки для проекта 
+RUN pip3 install --upgrade pip -r requirements.txt
+
+# Устанавливаем порт, который будет использоваться для сервера
+EXPOSE 5000

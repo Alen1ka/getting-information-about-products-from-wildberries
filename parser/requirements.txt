@@ -1,0 +1,2 @@
+PyYAML==6.0
+confluent-kafka==2.0.2
