@@ -7,3 +7,4 @@ http://127.0.0.1:2137/api/get_info_wb/
 
 Передать ссылку в формате jsom:
 {"url": "https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation"}
+
