@@ -3,7 +3,7 @@ LOGGING_DATEFMT: '%d-%b-%y %H:%M:%S %p' # в какой последовател
 LOGGING_FORMAT: '%(asctime)s %(msecs)d- %(process)d -%(levelname)s - %(message)s' # оформление лог файла - в какой последовательности выводить лог файл
 
 WEB_HOST: '0.0.0.0' # по какому адресу запускается программа и куда надо отправлять категорию wildberries
-WEB_PORT: 1234 # порт программы
+WEB_PORT: 5000 # порт программы
 
 KAFKA_BROKER: "localhost:9092"  # серевер брокера Kafka с топиками
 PRODUCER_DATA_TOPIC: "wb-category" # название категории в kafka, где хранятся товары с данными в виде словаря

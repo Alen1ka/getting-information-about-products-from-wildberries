@@ -2,13 +2,13 @@
 FROM python:3.9-slim-buster
 
 # установка рабочей директории в контейнере
-WORKDIR /parser
+WORKDIR /worker
 
 # копирование всех файлов (папку с Dockerfile), включая файл с зависимостями, в рабочую директорию
-COPY . /parser
+COPY . /worker
 
 # Скачиваем/обновляем необходимые библиотеки для проекта 
 RUN pip3 install --upgrade pip -r requirements.txt
 
 # Устанавливаем порт, который будет использоваться для сервера
-EXPOSE 5000
+EXPOSE $WEB_PORT
