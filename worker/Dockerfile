@@ -11,4 +11,4 @@ COPY . /worker
 RUN pip3 install --upgrade pip -r requirements.txt
 
 # Устанавливаем порт, который будет использоваться для сервера
-EXPOSE $WEB_PORT
+EXPOSE 5000
