@@ -27,7 +27,7 @@ logging.basicConfig(filename='worker.log', filemode='a',
                     level=logging.DEBUG)
 
 
-@app.route('/api/get_info_wb/')
+@app.route('/api/get_info_wb/', methods=['POST'])
 def get_info_wb():
     """Получение информации о товарах маркетплейса Wildberries"""
     try:
@@ -154,8 +154,15 @@ def delivery_report(err, msg):
 def save_answer_kafka(response, name_topic):
     """Сохраняет каждый JSON ответ сервера отдельным сообщением в "сыром виде" в топик **wb-category** в Kafka"""
     # передача продюсеру названия сервера
+    print(name_topic, config["KAFKA_BROKER"])
     p = Producer({
-        'bootstrap.servers': config["KAFKA_BROKER"]
+        # 'sasl.mechanism': SSL_MACHENISM,
+        # Set to SASL_SSL to enable TLS support.
+        #  'security.protocol': 'SASL_PLAINTEXT'}
+        'bootstrap.servers': config["KAFKA_BROKER"],
+        # 'security.protocol': SECURITY_PROTOCOL,
+        # 'sasl.username': API_KEY,
+        # 'sasl.password': API_SECRET_KEY
     })
 
     # Добавление сообщения в очередь сообщений в топик (отправка брокеру)
