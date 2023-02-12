@@ -138,6 +138,7 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
             product_url = "https://www.wildberries.ru/promotions"
         response = requests.get(product_url).json()
         logging.debug(f"Получены данные о товарах с {page_number} страницы")
+        print("there will be a save")
         save_answer_kafka(response, config["PRODUCER_DATA_TOPIC"])
         # get_data_from_topic()
 
@@ -164,6 +165,8 @@ def save_answer_kafka(response, name_topic):
         # 'sasl.username': API_KEY,
         # 'sasl.password': API_SECRET_KEY
     })
+    # Запуск callback функции асинхронно для получения отчета о доставке из предыдущих вызовов produce()
+    p.poll(0)
 
     # Добавление сообщения в очередь сообщений в топик (отправка брокеру)
     # callback - используется функцией pull или flush для последующего чтения данных отслеживания сообщения:
