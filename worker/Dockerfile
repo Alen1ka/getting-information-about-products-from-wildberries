@@ -11,4 +11,5 @@ COPY . /worker
 RUN pip3 install --upgrade pip -r requirements.txt
 
 # Устанавливаем порт, который будет использоваться для сервера
-EXPOSE 2130
+EXPOSE 5000
+# CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=2130"]

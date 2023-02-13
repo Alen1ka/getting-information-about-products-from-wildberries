@@ -30,6 +30,7 @@ logging.basicConfig(filename='worker.log', filemode='a',
 @app.route('/api/get_info_wb/', methods=['POST'])
 def get_info_wb():
     """Получение информации о товарах маркетплейса Wildberries"""
+    print(json.loads(request.data)["url"])
     try:
         url = json.loads(request.data)["url"]
         logging.debug(f"Получена ссылка: {url}")
@@ -180,6 +181,7 @@ def save_answer_kafka(response, name_topic):
 
 if __name__ == '__main__':
     app.run(host=config["WEB_HOST"], debug=True)
+    # app.run(host=config["WEB_HOST"], port=config["WEB_PORT"], debug=True)
     # data_structure = open("test.json", encoding='utf-8').readlines()
     # pprint.pprint(data_structure)
     # f = json.dumps(data_structure, indent=2)
