@@ -30,9 +30,9 @@ logging.basicConfig(filename='worker.log', filemode='a',
 @app.route('/api/get_info_wb/', methods=['POST'])
 def get_info_wb():
     """Получение информации о товарах маркетплейса Wildberries"""
-    return "успех"
+    # return "успех"
     print(json.loads(request.data)["url"])
-    return "успех"
+    # return "успех"
     try:
         url = json.loads(request.data)["url"]
         logging.debug(f"Получена ссылка: {url}")
@@ -40,11 +40,12 @@ def get_info_wb():
         # достать необходимые для запроса данные
         shard_key, kind, subject, ext = get_category_data(need_subcategory)
         # сделать запрос и взять первые пять страниц
-        getting_product_pages(shard_key, kind, subject, ext, page_url_category)
+        answer = getting_product_pages(shard_key, kind, subject, ext, page_url_category)
     except Exception as error:
         logging.debug(error)
+        return error
     logging.debug("Данные отправлены")
-    return "Данные отправлены"
+    return answer
 
 
 def find_the_right_category(url):
@@ -142,8 +143,9 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
         response = requests.get(product_url).json()
         logging.debug(f"Получены данные о товарах с {page_number} страницы")
         print("there will be a save")
-        save_answer_kafka(response, config["PRODUCER_DATA_TOPIC"])
+        answer = save_answer_kafka(response, config["PRODUCER_DATA_TOPIC"])
         # get_data_from_topic()
+    return answer
 
 
 def delivery_report(err, msg):
@@ -178,8 +180,8 @@ def save_answer_kafka(response, name_topic):
 
     # Дожидается доставки всех оставшихся сообщений и отчета о доставке
     # Если топик не создан, то он создается c 1 партицей по умолчанию (1 копия данных помещенных в топик)
-    p.flush()
-
+    answer = p.flush()
+    return answer
 
 if __name__ == '__main__':
     app.run(host=config["WEB_HOST"], debug=True)
