@@ -7,7 +7,6 @@ import logging
 
 app = Flask(__name__)
 
-
 def read_config():
     """Получение настроек из файла"""
     try:
@@ -31,8 +30,7 @@ logging.basicConfig(filename='worker.log', filemode='a',
 def get_info_wb():
     """Получение информации о товарах маркетплейса Wildberries"""
     # return "успех"
-    print(json.loads(request.data)["url"])
-    # return "успех"
+    # return json.loads(request.data)["url"]
     try:
         url = json.loads(request.data)["url"]
         logging.debug(f"Получена ссылка: {url}")
@@ -45,7 +43,7 @@ def get_info_wb():
         logging.debug(error)
         return error
     logging.debug("Данные отправлены")
-    return answer
+    return {"answer": answer}
 
 
 def find_the_right_category(url):
@@ -152,9 +150,9 @@ def delivery_report(err, msg):
     """Вызывается один раз для каждого полученного сообщения, чтобы указать результат доставки.
     Запускается с помощью poll() или flush()."""
     if err is not None:
-        logging.debug('Ошибка доставки сообщения: {}'.format(err))
+        return 'Ошибка доставки сообщения: {}'.format(err)
     else:
-        logging.debug('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))  # , msg.offcet()
+        return 'Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition())  # , msg.offcet()
 
 
 def save_answer_kafka(response, name_topic):
@@ -165,13 +163,13 @@ def save_answer_kafka(response, name_topic):
         # 'sasl.mechanism': SSL_MACHENISM,
         # Set to SASL_SSL to enable TLS support.
         #  'security.protocol': 'SASL_PLAINTEXT'}
-        'bootstrap.servers': config["KAFKA_BROKER"],
+        'bootstrap.servers': config["KAFKA_BROKER"]
         # 'security.protocol': SECURITY_PROTOCOL,
         # 'sasl.username': API_KEY,
         # 'sasl.password': API_SECRET_KEY
     })
     # Запуск callback функции асинхронно для получения отчета о доставке из предыдущих вызовов produce()
-    p.poll(0)
+    # p.poll(0)
 
     # Добавление сообщения в очередь сообщений в топик (отправка брокеру)
     # callback - используется функцией pull или flush для последующего чтения данных отслеживания сообщения:
