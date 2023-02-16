@@ -23,6 +23,9 @@ services:
     ports:
       - "2135-2137:5000"
     command: python worker.py
+    # networks:
+    #  - host
+    network_mode: "alena_default"
   parser:
     build: ./parser
     restart: on-failure

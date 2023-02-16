@@ -41,7 +41,7 @@ def get_info_wb():
         answer = getting_product_pages(shard_key, kind, subject, ext, page_url_category)
     except Exception as error:
         logging.debug(error)
-        return error
+        return {"error": error}
     logging.debug("Данные отправлены")
     return {"answer": answer}
 
@@ -163,7 +163,8 @@ def save_answer_kafka(response, name_topic):
         # 'sasl.mechanism': SSL_MACHENISM,
         # Set to SASL_SSL to enable TLS support.
         #  'security.protocol': 'SASL_PLAINTEXT'}
-        'bootstrap.servers': config["KAFKA_BROKER"]
+        'bootstrap.servers': 'broker:29092',
+        # 'broker.address.family': 'v6'
         # 'security.protocol': SECURITY_PROTOCOL,
         # 'sasl.username': API_KEY,
         # 'sasl.password': API_SECRET_KEY
