@@ -53,7 +53,7 @@ def get_data_from_topic():
     try:
         c = Consumer({
             'bootstrap.servers': config["KAFKA_BROKER"],
-            'group.id': 'mygroup',
+            # 'group.id': 'mygroup',
             'auto.offset.reset': config["AUTO_OFFSET_RESET"]
         })
 
@@ -61,14 +61,16 @@ def get_data_from_topic():
 
         while True:
             msg = c.poll(1.0)  # запрашивает данные каждую миллисекунду
-
+            print("Запрос данных")
             if msg is None:
+                print("Данных нет")
                 continue
             if msg.error():
+                print("Ошибка")
                 logging.debug("Ошибка при получении странцы с товрами из топика. {}".format(msg.error()))
                 continue
             logging.debug(f'Получена страница с товарами: {msg.value()}')
-            # print('Received message: {}'.format(msg.value()))
+            print('Получена страница с товарами: {}'.format(msg.value()))
             time_of_receipt = datetime.datetime.now()
             parse_products(msg.value(), time_of_receipt, config)
             c.close()

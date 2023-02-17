@@ -8,4 +8,3 @@ RUN pip3 install --upgrade pip -r requirements.txt
 # |ВАЖНЫЙ МОМЕНТ| копируем содержимое папки, где находится Dockerfile, 
 # в рабочую директорию контейнера
 COPY . /worker
-EXPOSE 5000 5001 5002
