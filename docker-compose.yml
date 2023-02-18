@@ -16,16 +16,18 @@ services:
     # директории ./backend, появятся в директории контейнера /backend
     volumes:
       - ./worker:/worker
-    deploy:
-      replicas: 3
+    # deploy:
+    #  replicas: 3
     # Открываем порт в контейнер
     # Порт, который будет смотреть наружу : порт который используется внутри контейнера
     ports:
-      - "2135-2137:5000"
+      - "2135:5000"
     command: python worker.py
     network_mode: "alena_default"
   parser:
     build: ./parser
     restart: on-failure
+    deploy:
+      replicas: 3
     command: python parser_products.py
-    # network_mode: "alena_default"
+    network_mode: "alena_default"

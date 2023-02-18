@@ -69,7 +69,7 @@ def get_data_from_topic():
     #c = Consumer(config)
     print("потребитель создан")
     try:
-        print("запуск парсера")
+        # print("запуск парсера")
 
         # Parse the configuration.
         # See https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
@@ -80,9 +80,9 @@ def get_data_from_topic():
         c = Consumer({
              'bootstrap.servers': config["KAFKA_BROKER"],
              'group.id': 'group_kafka'})
-        print("потребитель создан")
+        # print("потребитель создан")
         c.subscribe([config["PRODUCER_DATA_TOPIC"]])
-        print("топик назначен")
+        # print("топик назначен")
         while True:
             msg = c.poll(1.0)  # запрашивает данные каждую миллисекунду
             # logging.debug("Запрос данных")
@@ -95,7 +95,7 @@ def get_data_from_topic():
                 logging.debug("Ошибка при получении странцы с товрами из топика. {}".format(msg.error()))
                 continue
             logging.debug(f'Получена страница с товарами: {msg.value()}')
-            print('Получена страница с товарами: {}'.format(msg.value()))
+            print('Получена страница с товарами.')
             time_of_receipt = datetime.datetime.now()
             parse_products(msg.value(), time_of_receipt, config)
             c.close()
