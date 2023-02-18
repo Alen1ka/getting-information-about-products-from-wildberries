@@ -27,3 +27,5 @@ services:
   parser:
     build: ./parser
     restart: on-failure
+    command: python parser_products.py
+    # network_mode: "alena_default"

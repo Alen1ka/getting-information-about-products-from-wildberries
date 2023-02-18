@@ -2,7 +2,8 @@ from confluent_kafka import Producer, Consumer
 import datetime
 import yaml
 import logging
-
+from configparser import ConfigParser
+from argparse import ArgumentParser, FileType
 
 def read_config():
     """Получение настроек из файла"""
@@ -50,18 +51,42 @@ def save_answer_kafka(response, name_topic):
 def get_data_from_topic():
     """Получить сырые данные из топика wb-category"""
     logging.debug("Запуск парсера")
+    # Parse the configuration.
+    # See https://github.com/edeill/librdkafka/blob/master/CONFIGURATION.md
+    # Parse the command line.
+    # parser = ArgumentParser()
+    #parser.add_argument('config_file', type=FileType('r'))
+    #parser.add_argument('--reset', action='store_true')
+    #args = parser.parse_args()
+    #config_parser = ConfigParser()
+    #print(f"1: {config_parser}")
+    #config_parser.read_file(args.config_fil)
+    #print(f"2: {config_parser}")
+    #config = dict(config_parser['default'])
+    #print(f"3: {config}")
+    #config.update(config_parser['consumer'])
+    #print(f"4: {config}")
+    #c = Consumer(config)
+    print("потребитель создан")
     try:
+        print("запуск парсера")
+
+        # Parse the configuration.
+        # See https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
+        #config_parser = ConfigParser()
+        #config_parser.read_file(args.config_file)
+        #config = dict(config_parser['default'])
+        #config.update(config_parser['consumer'])
         c = Consumer({
-            'bootstrap.servers': config["KAFKA_BROKER"],
-            # 'group.id': 'mygroup',
-            'auto.offset.reset': config["AUTO_OFFSET_RESET"]
-        })
-
+             'bootstrap.servers': config["KAFKA_BROKER"],
+             'group.id': 'group_kafka'})
+        print("потребитель создан")
         c.subscribe([config["PRODUCER_DATA_TOPIC"]])
-
+        print("топик назначен")
         while True:
             msg = c.poll(1.0)  # запрашивает данные каждую миллисекунду
-            print("Запрос данных")
+            # logging.debug("Запрос данных")
+            print("запрос данных")
             if msg is None:
                 print("Данных нет")
                 continue
