@@ -20,10 +20,10 @@ def read_config():
 
 config = read_config()
 
-logging.basicConfig(filename='worker.log', filemode='a',
-                    format=config['LOGGING_FORMAT'],
-                    datefmt=config['LOGGING_DATEFMT'],
-                    level=logging.DEBUG)
+#logging.basicConfig(filename='worker.log', filemode='a',
+#                    format=config['LOGGING_FORMAT'],
+#                    datefmt=config['LOGGING_DATEFMT'],
+#                    level=logging.DEBUG)
 
 
 kafkalogger = logging.getLogger()

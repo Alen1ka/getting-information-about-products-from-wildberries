@@ -51,20 +51,19 @@ def save_answer_kafka(response, name_topic):
 def get_data_from_topic():
     """Получить сырые данные из топика wb-category"""
     logging.debug("Запуск парсера")
-    print("потребитель создан")
+    print("запрос данных")
     try:
         c = Consumer({
              'bootstrap.servers': config["KAFKA_BROKER"],
              'group.id': 'group_kafka'})
-        # print("потребитель создан")
+        print("потребитель создан")
         c.subscribe([config["PRODUCER_DATA_TOPIC"]])
-        # print("топик назначен")
+        print("топик назначен")
         while True:
             msg = c.poll(1.0)  # запрашивает данные каждую миллисекунду
             # logging.debug("Запрос данных")
-            print("запрос данных")
             if msg is None:
-                print("Данных нет")
+                #print("Данных нет")
                 continue
             if msg.error():
                 print("Ошибка")
@@ -75,7 +74,9 @@ def get_data_from_topic():
             time_of_receipt = datetime.datetime.now()
             parse_products(msg.value(), time_of_receipt, config)
         c.close()
+        print("парсер закончил свою работу")
     except Exception as error:
+        print("Ошибка try")
         logging.debug(error)
 
 
