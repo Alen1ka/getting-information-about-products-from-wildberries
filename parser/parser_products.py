@@ -51,32 +51,8 @@ def save_answer_kafka(response, name_topic):
 def get_data_from_topic():
     """Получить сырые данные из топика wb-category"""
     logging.debug("Запуск парсера")
-    # Parse the configuration.
-    # See https://github.com/edeill/librdkafka/blob/master/CONFIGURATION.md
-    # Parse the command line.
-    # parser = ArgumentParser()
-    #parser.add_argument('config_file', type=FileType('r'))
-    #parser.add_argument('--reset', action='store_true')
-    #args = parser.parse_args()
-    #config_parser = ConfigParser()
-    #print(f"1: {config_parser}")
-    #config_parser.read_file(args.config_fil)
-    #print(f"2: {config_parser}")
-    #config = dict(config_parser['default'])
-    #print(f"3: {config}")
-    #config.update(config_parser['consumer'])
-    #print(f"4: {config}")
-    #c = Consumer(config)
     print("потребитель создан")
     try:
-        # print("запуск парсера")
-
-        # Parse the configuration.
-        # See https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
-        #config_parser = ConfigParser()
-        #config_parser.read_file(args.config_file)
-        #config = dict(config_parser['default'])
-        #config.update(config_parser['consumer'])
         c = Consumer({
              'bootstrap.servers': config["KAFKA_BROKER"],
              'group.id': 'group_kafka'})
@@ -98,7 +74,7 @@ def get_data_from_topic():
             print('Получена страница с товарами.')
             time_of_receipt = datetime.datetime.now()
             parse_products(msg.value(), time_of_receipt, config)
-            c.close()
+        c.close()
     except Exception as error:
         logging.debug(error)
 
@@ -108,9 +84,18 @@ def parse_products(msg, time_of_receipt, config):
     msg = msg.decode('utf-8')
     products = eval(msg)['data']['products']
     for product in products:
-        save_answer_kafka(
-            {"time": time_of_receipt, "id": product['id'], "name": product['name'],
-             "price": product['salePriceU'] / 100, "sale": product['sale']}, config["CONSUMER_DATA_TOPIC"])
+        product = {"time": time_of_receipt, "id": product['id'], "name": product['name'], "price": product['salePriceU'] / 100, "sale": product['sale']}
+        kafka_products = []
+        c = Consumer({
+             'bootstrap.servers': config["KAFKA_BROKER"],
+             'group.id': 'group_kafka'})
+        c.subscribe([config["CONSUMER_DATA_TOPIC"]])
+        msg = c.poll()
+        if msg is not None:
+            print(f"msg = {msg}")
+            kafka_products = msg
+            if product not in kafka_products:
+                save_answer_kafka(product, config["CONSUMER_DATA_TOPIC"])
 
 
 if __name__ == '__main__':

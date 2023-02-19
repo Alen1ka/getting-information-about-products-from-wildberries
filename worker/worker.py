@@ -26,6 +26,11 @@ logging.basicConfig(filename='worker.log', filemode='a',
                     level=logging.DEBUG)
 
 
+kafkalogger = logging.getLogger()
+kafkalogger.addHandler(logging.StreamHandler())
+
+
+
 @app.route('/api/get_info_wb/', methods=['POST'])
 def get_info_wb():
     """Получение информации о товарах маркетплейса Wildberries"""
@@ -163,12 +168,13 @@ def save_answer_kafka(response, name_topic):
         # 'sasl.mechanism': SSL_MACHENISM,
         # Set to SASL_SSL to enable TLS support.
         #  'security.protocol': 'SASL_PLAINTEXT'}
-        'bootstrap.servers': config["KAFKA_BROKER"],
+        'bootstrap.servers': config["KAFKA_BROKER"]},
+        logger=kafkalogger
         # 'broker.address.family': 'v6'
         # 'security.protocol': SECURITY_PROTOCOL,
         # 'sasl.username': API_KEY,
         # 'sasl.password': API_SECRET_KEY
-    })
+    )
     # Запуск callback функции асинхронно для получения отчета о доставке из предыдущих вызовов produce()
     # p.poll(0)
 
