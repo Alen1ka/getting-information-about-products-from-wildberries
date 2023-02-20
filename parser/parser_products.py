@@ -1,11 +1,6 @@
 from confluent_kafka import Producer, Consumer
 import datetime
 import yaml
-#import logging
-
-
-# from configparser import ConfigParser
-# from argparse import ArgumentParser, FileType
 
 def read_config():
     """Получение настроек из файла"""
@@ -15,10 +10,6 @@ def read_config():
 
 
 config = read_config()
-"""logging.basicConfig(filename='log_parser.log', filemode='a',
-                    format=config['LOGGING_FORMAT'],
-                    datefmt=config['LOGGING_DATEFMT'],
-                    level=logging.DEBUG)"""
 
 
 def delivery_report(err, msg):
@@ -26,15 +17,12 @@ def delivery_report(err, msg):
     Запускается с помощью poll() или flush()."""
     if err is not None:
         print('Ошибка доставки сообщения: {}'.format(err))
-        # logging.debug('Ошибка доставки сообщения: {}'.format(err))
     else:
         print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))
-        # logging.debug('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))
 
 
 def save_answer_kafka(response, name_topic):
     """Сохранение информации о каждом товаре страницы в топик **wb-products** в Kafka"""
-    # logging.debug(f"Получена информация о товаре: {response}")
     print(f"Получена информация о товаре: {response}")
     # передача продюсеру названия сервера
     p = Producer({
@@ -67,7 +55,6 @@ def get_data_from_topic():
             if msg.error():
                 print("Ошибка при получении страницы с товрами из топика. {}".format(msg.error()))
                 continue
-            # logging.debug(f'Получена страница с товарами: {msg.value()}')
             print('Получена страница с товарами.')
             time_of_receipt = datetime.datetime.now()
             parse_products(msg.value(), time_of_receipt, config)
@@ -82,22 +69,10 @@ def parse_products(msg, time_of_receipt, config):
     msg = msg.decode('utf-8')
     products = eval(msg)['data']['products']
     print("Получен список товаров из wb-category")
-    #c = Consumer({
-    #    'bootstrap.servers': config["KAFKA_BROKER"],
-    #    'group.id': 'group_kafka'})
-    #c.subscribe([config["CONSUMER_DATA_TOPIC"]])
-    #msg = c.poll()
-    #print(f"msg = {msg}")
 
     for product in products:
         product = {"time": time_of_receipt, "id": product['id'], "name": product['name'],
                    "price": product['salePriceU'] / 100, "sale": product['sale']}
-       # kafka_products = []
-       # if msg is not None:
-       #     kafka_products = msg
-       #     if product not in kafka_products:
-       #         print("product not in kafka_products")
-       #         save_answer_kafka(product, config["CONSUMER_DATA_TOPIC"])
         save_answer_kafka(product, config["CONSUMER_DATA_TOPIC"])
 
 if __name__ == '__main__':

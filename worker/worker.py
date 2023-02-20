@@ -16,39 +16,11 @@ def read_config():
 
 config = read_config()
 
-#KAFKA_BOOTSTRAP_SERVER = (f'<{config["KAFKA_BROKER"]}>')
-#KAFKA_CA = '<path_to_ca_cert>'
-#TOPIC = f'{config["PRODUCER_DATA_TOPIC"]}'
-
-#logger = logging.getLogger('MyCoolProject')
-
-# Instantiate your kafka logging handler object
-#kafka_handler_obj = KafkaLoggingHandler(KAFKA_BOOTSTRAP_SERVER,
-#                                        TOPIC)
-                                        #ssl_cafile=KAFKA_CA)
-
-#logger.addHandler(kafka_handler_obj)
-# Set logging level
-#logger.setLevel(logging.DEBUG)
-
-#logger.info('Happy Logging!')
-#logger.error("debug")
-#logging.basicConfig(filename='worker.log', filemode='a',
-#                    format=config['LOGGING_FORMAT'],
-#                    datefmt=config['LOGGING_DATEFMT'],
-#                    level=logging.DEBUG)
-
-
-#kafkalogger = logging.getLogger()
-#kafkalogger.addHandler(logging.StreamHandler())
-
 
 
 @app.route('/api/get_info_wb/', methods=['POST'])
 def get_info_wb():
     """Получение информации о товарах маркетплейса Wildberries"""
-    # return "успех"
-    # return json.loads(request.data)["url"]
     try:
         url = json.loads(request.data)["url"]
         print(f"Получена ссылка: {url}")
@@ -127,7 +99,6 @@ def get_category_data(subcategory):
 
     elif query.find('ext') != - 1:
         ext = '&' + query_split[1]
-        # subject = subcategory['query'].split('&')[0]
 
     elif query.find('kind') != - 1:
         kind = '&' + query_split[0]
@@ -159,7 +130,6 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
         response = requests.get(product_url).json()
         print(f"Данные о товарах с {page_number} страницы будут сохранены в топик {name_topic} по адресу {config['KAFKA_BROKER']}")
         save_answer_kafka(response, name_topic)
-        # get_data_from_topic()
 
 
 def delivery_report(err, msg):
@@ -168,25 +138,14 @@ def delivery_report(err, msg):
     if err is not None:
         print('Ошибка доставки сообщения: {}'.format(err))
     else:
-        print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))  # , msg.offcet()
+        print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))
 
 
 def save_answer_kafka(response, name_topic):
     """Сохраняет каждый JSON ответ сервера отдельным сообщением в "сыром виде" в топик **wb-category** в Kafka"""
     # передача продюсеру названия сервера
     p = Producer({
-        # 'sasl.mechanism': SSL_MACHENISM,
-        # Set to SASL_SSL to enable TLS support
-        #  'security.protocol': 'SASL_PLAINTEXT'}
-        'bootstrap.servers': config["KAFKA_BROKER"]}
-        #logger=kafkalogger
-        # 'broker.address.family': 'v6'
-        # 'security.protocol': SECURITY_PROTOCOL,
-        # 'sasl.username': API_KEY,
-        # 'sasl.password': API_SECRET_KEY
-    )
-    # Запуск callback функции асинхронно для получения отчета о доставке из предыдущих вызовов produce()
-    # p.poll(0)
+        'bootstrap.servers': config["KAFKA_BROKER"]})
 
     # Добавление сообщения в очередь сообщений в топик (отправка брокеру)
     # callback - используется функцией pull или flush для последующего чтения данных отслеживания сообщения:
