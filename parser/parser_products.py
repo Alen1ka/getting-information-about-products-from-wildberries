@@ -47,7 +47,7 @@ def get_data_from_topic():
            'bootstrap.servers': config["KAFKA_BROKER"],
            'group.id': 'group_kafka'})
         c.subscribe([config["PRODUCER_DATA_TOPIC"]])
-        print("Запуск парсера. Потребитель будет создан и топик назначен")
+        print("Запуск парсера. Потребитель создан и топик назначен")
         while True:
             msg = c.poll(1.0)  # запрашивает данные каждую миллисекунду
             if msg is None:

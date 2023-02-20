@@ -19,7 +19,7 @@ services:
     ports:
       - "2135:5000"
     command: python worker.py
-    network_mode: "alena_default"
+    network_mode: "custom_network_name"
   parser:
     build: ./parser
     restart: on-failure
@@ -28,4 +28,4 @@ services:
     deploy:
       replicas: 3
     command: python parser_products.py
-    network_mode: "alena_default"
+    network_mode: "custom_network_name"
