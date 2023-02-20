@@ -2,6 +2,8 @@
 
 # Настройка
 
+Необходимо установить Kafka
+
 Чтобы подключить network_mode в docker-compose.yaml необходимо узнать имя сети с помощью команды:
 docker network ls
 
