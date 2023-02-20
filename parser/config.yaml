@@ -1,8 +1,3 @@
-LOGGING_DATEFMT: '%d-%b-%y %H:%M:%S %p' # в какой последовательности записывать дату и время в лог файл
-LOGGING_FORMAT: '%(asctime)s %(msecs)d- %(process)d -%(levelname)s - %(message)s' # оформление лог файла - в какой последовательности выводить лог файл
-
 KAFKA_BROKER: 'broker:29092' # серевер брокера Kafka с топиками
 PRODUCER_DATA_TOPIC: "wb-category" # название категории в kafka, где хранятся товары с данными в виде словаря
 CONSUMER_DATA_TOPIC: "wb-products" #  название категории в kafka, где хранятся данные отдельно в виде словаря
-
-AUTO_OFFSET_RESET: "earliest" # установить потребителя на самое раннее смещение
