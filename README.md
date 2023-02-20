@@ -6,7 +6,7 @@ http://127.0.0.1:2135/api/get_info_wb/
 Передать ссылку в формате jsom:
 {"url": "https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation"}
 
-Чтобы подключить network_mode в main.config необходимо знать имя сети:
+Чтобы подключить network_mode в docker-compose.yaml необходимо узнать имя сети с помощью команды:
 docker network ls
 
 Чтобы узнать, какая сеть принадлежит kafka далее необходимо ввести команду:
