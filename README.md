@@ -16,7 +16,9 @@ docker network inspect {имя сети}
 # Запуск
 
 Сборка и запуск docker-compose:
+
 docker-compose build
+
 docker-compose up
 
 Для передачи ссылки необходимо обратиться по следующему адресу:
