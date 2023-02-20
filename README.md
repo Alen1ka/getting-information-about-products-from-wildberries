@@ -2,7 +2,8 @@
 
 # Настройка
 
-Необходимо установить Kafka
+Необходимо установить и запустить Confluent Kafka: 
+https://docs.confluent.io/platform/current/platform-quickstart.html
 
 Чтобы подключить network_mode в docker-compose.yaml необходимо узнать имя сети с помощью команды:
 docker network ls
@@ -13,6 +14,10 @@ docker network inspect {имя сети}
 Нужная сеть будет иметь контейнеры kafka (ksqldb-server, zookeeper,...)
 
 # Запуск
+
+Сборка и запуск docker-compose:
+docker-compose build
+docker-compose up
 
 Для передачи ссылки необходимо обратиться по следующему адресу:
 http://127.0.0.1:2135/api/get_info_wb/
