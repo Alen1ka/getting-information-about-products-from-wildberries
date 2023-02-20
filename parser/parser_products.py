@@ -1,9 +1,10 @@
+
 from confluent_kafka import Producer, Consumer
 import datetime
 import yaml
 import logging
-from configparser import ConfigParser
-from argparse import ArgumentParser, FileType
+#from configparser import ConfigParser
+#from argparse import ArgumentParser, FileType
 
 def read_config():
     """Получение настроек из файла"""
@@ -53,13 +54,18 @@ def get_data_from_topic():
     logging.debug("Запуск парсера")
     print("запрос данных")
     try:
-        c = Consumer({
-             'bootstrap.servers': config["KAFKA_BROKER"],
-             'group.id': 'group_kafka'})
-        print("потребитель создан")
-        c.subscribe([config["PRODUCER_DATA_TOPIC"]])
-        print("топик назначен")
+        #c = Consumer({
+        #     'bootstrap.servers': config["KAFKA_BROKER"],
+        #     'group.id': 'group_kafka'})
+        #print("потребитель создан")
+        #c.subscribe([config["PRODUCER_DATA_TOPIC"]])
+        #print("топик назначен")
         while True:
+            c = Consumer({
+                'bootstrap.servers': config["KAFKA_BROKER"],
+                'group.id': 'group_kafka'})
+            c.subscribe([config["PRODUCER_DATA_TOPIC"]])
+            print("потребитель создан и топик назначен")
             msg = c.poll(1.0)  # запрашивает данные каждую миллисекунду
             # logging.debug("Запрос данных")
             if msg is None:
@@ -73,8 +79,8 @@ def get_data_from_topic():
             print('Получена страница с товарами.')
             time_of_receipt = datetime.datetime.now()
             parse_products(msg.value(), time_of_receipt, config)
-        c.close()
-        print("парсер закончил свою работу")
+            c.close()
+            print("парсер закончил свою работу")
     except Exception as error:
         print("Ошибка try")
         logging.debug(error)

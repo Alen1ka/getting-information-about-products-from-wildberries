@@ -145,7 +145,7 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
             product_url = "https://www.wildberries.ru/promotions"
         response = requests.get(product_url).json()
         logging.debug(f"Получены данные о товарах с {page_number} страницы")
-        print("there will be a save")
+        print(f"Данные о товарах с {page_number} страницы будут сохранены в топик {name_topic} по адресу") #{config["KAFKA_BROKER"]}')
         answer = save_answer_kafka(response, config["PRODUCER_DATA_TOPIC"])
         # get_data_from_topic()
     return answer
@@ -163,10 +163,9 @@ def delivery_report(err, msg):
 def save_answer_kafka(response, name_topic):
     """Сохраняет каждый JSON ответ сервера отдельным сообщением в "сыром виде" в топик **wb-category** в Kafka"""
     # передача продюсеру названия сервера
-    print(name_topic, config["KAFKA_BROKER"])
     p = Producer({
         # 'sasl.mechanism': SSL_MACHENISM,
-        # Set to SASL_SSL to enable TLS support.
+        # Set to SASL_SSL to enable TLS support
         #  'security.protocol': 'SASL_PLAINTEXT'}
         'bootstrap.servers': config["KAFKA_BROKER"]},
         logger=kafkalogger
@@ -190,13 +189,6 @@ def save_answer_kafka(response, name_topic):
 
 if __name__ == '__main__':
     app.run(host=config["WEB_HOST"], debug=True)
-    # app.run(host=config["WEB_HOST"], port=config["WEB_PORT"], debug=True)
-    # data_structure = open("test.json", encoding='utf-8').readlines()
-    # pprint.pprint(data_structure)
-    # f = json.dumps(data_structure, indent=2)
-    # with open("test2.txt", "a") as myfile:
-    #   myfile.write(f)
-    # print(f)
     # Принимает на вход по API адрес категории на wildberries.ru
 
     # getting_info_about_wildberries_products(
