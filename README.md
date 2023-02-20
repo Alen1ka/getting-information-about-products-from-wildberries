@@ -19,7 +19,7 @@ docker network inspect {имя сети}
 
 docker-compose build
 
-docker-compose up
+docker-compose up -d
 
 Для передачи ссылки необходимо обратиться по следующему адресу:
 http://127.0.0.1:2135/api/get_info_wb/
@@ -28,3 +28,6 @@ http://127.0.0.1:2135/api/get_info_wb/
 {"url": "https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation"}
 
 Пример запроса приведен в файле query.py
+
+Можно посмотреть ошибки и историю работы программы при помощи: 
+docker-compose logs
