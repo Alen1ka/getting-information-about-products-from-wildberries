@@ -4,8 +4,6 @@ services:
     # Путь до Dockerfile
     build: ./worker
     environment:
-      # для отладки (при запуске в релиз убрать!)
-      #- FLASK_DEBUG=development
       ## Позволяет отслеживать процесс работы приложения в командной строке
       - PYTHONUNBUFFERED=True
       ##
@@ -16,8 +14,6 @@ services:
     # директории ./backend, появятся в директории контейнера /backend
     volumes:
       - ./worker:/worker
-    # deploy:
-    #  replicas: 3
     # Открываем порт в контейнер
     # Порт, который будет смотреть наружу : порт который используется внутри контейнера
     ports:
