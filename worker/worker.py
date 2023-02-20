@@ -3,31 +3,44 @@ import yaml
 import json
 from confluent_kafka import Producer
 from flask import Flask, request
-import logging
 
 app = Flask(__name__)
 
 def read_config():
     """Получение настроек из файла"""
-    try:
-        with open('config.yaml') as f:
-            read_data = yaml.load(f, Loader=yaml.FullLoader)
-            logging.debug("Получены настройки из файла")
-    except Exception as error:
-        logging.debug(error)
+    with open('config.yaml') as f:
+        read_data = yaml.load(f, Loader=yaml.FullLoader)
+        print("Получены настройки из файла")
     return read_data
 
 
 config = read_config()
 
+#KAFKA_BOOTSTRAP_SERVER = (f'<{config["KAFKA_BROKER"]}>')
+#KAFKA_CA = '<path_to_ca_cert>'
+#TOPIC = f'{config["PRODUCER_DATA_TOPIC"]}'
+
+#logger = logging.getLogger('MyCoolProject')
+
+# Instantiate your kafka logging handler object
+#kafka_handler_obj = KafkaLoggingHandler(KAFKA_BOOTSTRAP_SERVER,
+#                                        TOPIC)
+                                        #ssl_cafile=KAFKA_CA)
+
+#logger.addHandler(kafka_handler_obj)
+# Set logging level
+#logger.setLevel(logging.DEBUG)
+
+#logger.info('Happy Logging!')
+#logger.error("debug")
 #logging.basicConfig(filename='worker.log', filemode='a',
 #                    format=config['LOGGING_FORMAT'],
 #                    datefmt=config['LOGGING_DATEFMT'],
 #                    level=logging.DEBUG)
 
 
-kafkalogger = logging.getLogger()
-kafkalogger.addHandler(logging.StreamHandler())
+#kafkalogger = logging.getLogger()
+#kafkalogger.addHandler(logging.StreamHandler())
 
 
 
@@ -38,17 +51,17 @@ def get_info_wb():
     # return json.loads(request.data)["url"]
     try:
         url = json.loads(request.data)["url"]
-        logging.debug(f"Получена ссылка: {url}")
+        print(f"Получена ссылка: {url}")
         need_subcategory, page_url_category = find_the_right_category(url)
         # достать необходимые для запроса данные
         shard_key, kind, subject, ext = get_category_data(need_subcategory)
         # сделать запрос и взять первые пять страниц
-        answer = getting_product_pages(shard_key, kind, subject, ext, page_url_category)
+        getting_product_pages(shard_key, kind, subject, ext, page_url_category)
     except Exception as error:
-        logging.debug(error)
-        return {"error": error}
-    logging.debug("Данные отправлены")
-    return {"answer": answer}
+        print({"Ошибка": error})
+        return {"Ошибка": error}
+    print("Данные отправлены")
+    return "Данные отправлены"
 
 
 def find_the_right_category(url):
@@ -72,7 +85,6 @@ def find_the_right_category(url):
     need_subcategory = {}
     # взять данные из подкатегории для последующего запроса о взятии товаров
     catalog = requests.get('https://catalog.wb.ru/menu/v6/api?lang=ru&locale=ru')
-    # print(page_url_category)
     for category in catalog.json()['data']['catalog']:
         # найти нужную категорию товаров
         if category['pageUrl'] in page_url_category:
@@ -129,6 +141,7 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
     response = requests.get("https://marketing-info.wildberries.ru/marketing-info/api/v6/info?curr=rub")
     client_params = {p.split('=')[0]: p.split('=')[1] for p in response.json()['xClientInfo'].split('&')}
     product_url = ""
+    name_topic = config["PRODUCER_DATA_TOPIC"]
     for page_number in range(1, 2):
         if page_url_category != '/promotions':
             # dest - это определение региона и центра выдачи товаров, склада (Это может быть направление
@@ -144,20 +157,18 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
         elif shard_key is None and subject is None:
             product_url = "https://www.wildberries.ru/promotions"
         response = requests.get(product_url).json()
-        logging.debug(f"Получены данные о товарах с {page_number} страницы")
-        print(f"Данные о товарах с {page_number} страницы будут сохранены в топик {name_topic} по адресу") #{config["KAFKA_BROKER"]}')
-        answer = save_answer_kafka(response, config["PRODUCER_DATA_TOPIC"])
+        print(f"Данные о товарах с {page_number} страницы будут сохранены в топик {name_topic} по адресу {config['KAFKA_BROKER']}")
+        save_answer_kafka(response, name_topic)
         # get_data_from_topic()
-    return answer
 
 
 def delivery_report(err, msg):
     """Вызывается один раз для каждого полученного сообщения, чтобы указать результат доставки.
     Запускается с помощью poll() или flush()."""
     if err is not None:
-        return 'Ошибка доставки сообщения: {}'.format(err)
+        print('Ошибка доставки сообщения: {}'.format(err))
     else:
-        return 'Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition())  # , msg.offcet()
+        print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))  # , msg.offcet()
 
 
 def save_answer_kafka(response, name_topic):
@@ -167,8 +178,8 @@ def save_answer_kafka(response, name_topic):
         # 'sasl.mechanism': SSL_MACHENISM,
         # Set to SASL_SSL to enable TLS support
         #  'security.protocol': 'SASL_PLAINTEXT'}
-        'bootstrap.servers': config["KAFKA_BROKER"]},
-        logger=kafkalogger
+        'bootstrap.servers': config["KAFKA_BROKER"]}
+        #logger=kafkalogger
         # 'broker.address.family': 'v6'
         # 'security.protocol': SECURITY_PROTOCOL,
         # 'sasl.username': API_KEY,
@@ -184,8 +195,7 @@ def save_answer_kafka(response, name_topic):
 
     # Дожидается доставки всех оставшихся сообщений и отчета о доставке
     # Если топик не создан, то он создается c 1 партицей по умолчанию (1 копия данных помещенных в топик)
-    answer = p.flush()
-    return answer
+    p.flush()
 
 if __name__ == '__main__':
     app.run(host=config["WEB_HOST"], debug=True)

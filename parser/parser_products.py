@@ -1,10 +1,11 @@
-
 from confluent_kafka import Producer, Consumer
 import datetime
 import yaml
-import logging
-#from configparser import ConfigParser
-#from argparse import ArgumentParser, FileType
+#import logging
+
+
+# from configparser import ConfigParser
+# from argparse import ArgumentParser, FileType
 
 def read_config():
     """Получение настроек из файла"""
@@ -14,25 +15,27 @@ def read_config():
 
 
 config = read_config()
-
-logging.basicConfig(filename='log_parser.log', filemode='a',
+"""logging.basicConfig(filename='log_parser.log', filemode='a',
                     format=config['LOGGING_FORMAT'],
                     datefmt=config['LOGGING_DATEFMT'],
-                    level=logging.DEBUG)
+                    level=logging.DEBUG)"""
 
 
 def delivery_report(err, msg):
     """Вызывается один раз для каждого полученного сообщения, чтобы указать результат доставки.
     Запускается с помощью poll() или flush()."""
     if err is not None:
-        logging.debug('Ошибка доставки сообщения: {}'.format(err))
+        print('Ошибка доставки сообщения: {}'.format(err))
+        # logging.debug('Ошибка доставки сообщения: {}'.format(err))
     else:
-        logging.debug('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))
+        print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))
+        # logging.debug('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))
 
 
 def save_answer_kafka(response, name_topic):
     """Сохранение информации о каждом товаре страницы в топик **wb-products** в Kafka"""
-    logging.debug(f"Получена информация о товаре: {response}")
+    # logging.debug(f"Получена информация о товаре: {response}")
+    print(f"Получена информация о товаре: {response}")
     # передача продюсеру названия сервера
     p = Producer({
         'bootstrap.servers': config["KAFKA_BROKER"]
@@ -51,59 +54,51 @@ def save_answer_kafka(response, name_topic):
 # Принимает на вход по API адрес категории на wildberries.ru
 def get_data_from_topic():
     """Получить сырые данные из топика wb-category"""
-    logging.debug("Запуск парсера")
-    print("запрос данных")
     try:
-        #c = Consumer({
-        #     'bootstrap.servers': config["KAFKA_BROKER"],
-        #     'group.id': 'group_kafka'})
-        #print("потребитель создан")
-        #c.subscribe([config["PRODUCER_DATA_TOPIC"]])
-        #print("топик назначен")
+        c = Consumer({
+           'bootstrap.servers': config["KAFKA_BROKER"],
+           'group.id': 'group_kafka'})
+        c.subscribe([config["PRODUCER_DATA_TOPIC"]])
+        print("Запуск парсера. Потребитель будет создан и топик назначен")
         while True:
-            c = Consumer({
-                'bootstrap.servers': config["KAFKA_BROKER"],
-                'group.id': 'group_kafka'})
-            c.subscribe([config["PRODUCER_DATA_TOPIC"]])
-            print("потребитель создан и топик назначен")
             msg = c.poll(1.0)  # запрашивает данные каждую миллисекунду
-            # logging.debug("Запрос данных")
             if msg is None:
-                #print("Данных нет")
                 continue
             if msg.error():
-                print("Ошибка")
-                logging.debug("Ошибка при получении странцы с товрами из топика. {}".format(msg.error()))
+                print("Ошибка при получении страницы с товрами из топика. {}".format(msg.error()))
                 continue
-            logging.debug(f'Получена страница с товарами: {msg.value()}')
+            # logging.debug(f'Получена страница с товарами: {msg.value()}')
             print('Получена страница с товарами.')
             time_of_receipt = datetime.datetime.now()
             parse_products(msg.value(), time_of_receipt, config)
-            c.close()
-            print("парсер закончил свою работу")
+        c.close()
+        print("Парсер закончил свою работу")
     except Exception as error:
-        print("Ошибка try")
-        logging.debug(error)
+        print(f"Ошибка парсера: {error}")
 
 
 def parse_products(msg, time_of_receipt, config):
     """Парсинг товаров и отправка данных о каждом товаре в функцию сохранения товаров"""
     msg = msg.decode('utf-8')
     products = eval(msg)['data']['products']
-    for product in products:
-        product = {"time": time_of_receipt, "id": product['id'], "name": product['name'], "price": product['salePriceU'] / 100, "sale": product['sale']}
-        kafka_products = []
-        c = Consumer({
-             'bootstrap.servers': config["KAFKA_BROKER"],
-             'group.id': 'group_kafka'})
-        c.subscribe([config["CONSUMER_DATA_TOPIC"]])
-        msg = c.poll()
-        if msg is not None:
-            print(f"msg = {msg}")
-            kafka_products = msg
-            if product not in kafka_products:
-                save_answer_kafka(product, config["CONSUMER_DATA_TOPIC"])
+    print("Получен список товаров из wb-category")
+    #c = Consumer({
+    #    'bootstrap.servers': config["KAFKA_BROKER"],
+    #    'group.id': 'group_kafka'})
+    #c.subscribe([config["CONSUMER_DATA_TOPIC"]])
+    #msg = c.poll()
+    #print(f"msg = {msg}")
 
+    for product in products:
+        product = {"time": time_of_receipt, "id": product['id'], "name": product['name'],
+                   "price": product['salePriceU'] / 100, "sale": product['sale']}
+       # kafka_products = []
+       # if msg is not None:
+       #     kafka_products = msg
+       #     if product not in kafka_products:
+       #         print("product not in kafka_products")
+       #         save_answer_kafka(product, config["CONSUMER_DATA_TOPIC"])
+        save_answer_kafka(product, config["CONSUMER_DATA_TOPIC"])
 
 if __name__ == '__main__':
     get_data_from_topic()

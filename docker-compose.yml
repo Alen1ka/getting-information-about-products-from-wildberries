@@ -5,7 +5,7 @@ services:
     build: ./worker
     environment:
       # для отладки (при запуске в релиз убрать!)
-      - FLASK_DEBUG=development
+      #- FLASK_DEBUG=development
       ## Позволяет отслеживать процесс работы приложения в командной строке
       - PYTHONUNBUFFERED=True
       ##
@@ -27,6 +27,8 @@ services:
   parser:
     build: ./parser
     restart: on-failure
+    environment:
+      - PYTHONUNBUFFERED=True
     deploy:
       replicas: 3
     command: python parser_products.py
