@@ -28,10 +28,8 @@ http://127.0.0.1:2135/api/get_info_wb/
 {"url": "https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation"}
 {"url": "https://www.wildberries.ru/catalog/detyam/odezhda/dlya-devochek/odezhda-dlya-doma"}
 {"url": "https://www.wildberries.ru/catalog/detyam/tovary-dlya-malysha/peredvizhenie/avtokresla-detskie"}
-{"url": "https://www.wildberries.ru/promotions"} # запрос обычный, но нужно в начало запроса постаавить action,
-# только где его взять неизвестно
-{"url": "https://www.wildberries.ru/brands/asics"} # обращаться к https://catalog.wb.ru/brands/special/catalog?
-# и взять brand, в запросе будет идти после appType
+{"url": "https://www.wildberries.ru/promotions"} -не работает. Запрос обычный, но нужно в начало запроса постаавить action, только где его взять неизвестно
+{"url": "https://www.wildberries.ru/brands/asics"} - не работает. Обращаться к https://catalog.wb.ru/brands/special/catalog? и взять brand, в запросе будет идти после appType
 
 Пример запроса приведен в файле query.py
 
