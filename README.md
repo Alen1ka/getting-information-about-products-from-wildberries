@@ -24,8 +24,14 @@ docker-compose up -d
 Для передачи ссылки необходимо обратиться по следующему адресу:
 http://127.0.0.1:2135/api/get_info_wb/
 
-Передать ссылку в формате json:
+Передать ссылку категории в формате json:
 {"url": "https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation"}
+{"url": "https://www.wildberries.ru/catalog/detyam/odezhda/dlya-devochek/odezhda-dlya-doma"}
+{"url": "https://www.wildberries.ru/catalog/detyam/tovary-dlya-malysha/peredvizhenie/avtokresla-detskie"}
+{"url": "https://www.wildberries.ru/promotions"} # запрос обычный, но нужно в начало запроса постаавить action,
+# только где его взять неизвестно
+{"url": "https://www.wildberries.ru/brands/asics"} # обращаться к https://catalog.wb.ru/brands/special/catalog?
+# и взять brand, в запросе будет идти после appType
 
 Пример запроса приведен в файле query.py
 
