@@ -56,6 +56,12 @@ def get_data_from_topic():
                 print("Ошибка при получении страницы с товрами из топика. {}".format(msg.error()))
                 continue
             print('Получена страница с товарами.')
+            ####
+            msg = msg.value().decode('utf-8')
+            products = eval(msg)['data']['products']
+            print(products[0])
+            return 0
+            #####
             time_of_receipt = datetime.datetime.now()
             parse_products(msg.value(), time_of_receipt, config)
         c.close()

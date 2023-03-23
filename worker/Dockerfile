@@ -1,5 +1,5 @@
 # Выкачиваем из dockerhub образ с python версии 3.9
-FROM python:3.9
+FROM python:3.9-slim-buster
 
 # Устанавливаем рабочую директорию для проекта в контейнере
 WORKDIR /worker

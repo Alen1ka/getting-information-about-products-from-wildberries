@@ -113,6 +113,16 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
     client_params = {p.split('=')[0]: p.split('=')[1] for p in response.json()['xClientInfo'].split('&')}
     product_url = ""
     name_topic = config["PRODUCER_DATA_TOPIC"]
+    # если данные клиента, такие как emp и version  получены, то передать их в запрос
+    if client_params.get('emp') is not None:
+        emp = f"emp={client_params['emp']}"
+    else:
+        emp = ""
+    if client_params.get('version') is not None:
+        version = f"&version={client_params['version']}"
+    else:
+        version = ""
+
     for page_number in range(1, 2):
         if page_url_category != '/promotions':
             # dest - это определение региона и центра выдачи товаров, склада (Это может быть направление
@@ -121,10 +131,10 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
             # конкретного зарегистрированного покупателя.
             product_url = f"https://catalog.wb.ru/catalog/{shard_key}/catalog?" \
                           f"appType={client_params['appType']}&curr={client_params['curr']}" \
-                          f"&dest={client_params['dest']}&emp={client_params['emp']}{ext}{kind}&" \
+                          f"&dest={client_params['dest']}&{emp}{ext}{kind}&" \
                           f"lang={client_params['lang']}&locale={client_params['locale']}&page={page_number}&" \
                           f"reg={client_params['reg']}&regions={client_params['regions']}&sort=popular&" \
-                          f"spp={client_params['spp']}&{subject}&version={client_params['version']}"
+                          f"spp={client_params['spp']}&{subject}{version}"
         elif shard_key is None and subject is None:
             product_url = "https://www.wildberries.ru/promotions"
         response = requests.get(product_url).json()
@@ -157,21 +167,6 @@ def save_answer_kafka(response, name_topic):
     p.flush()
 
 if __name__ == '__main__':
+   # Принимает на вход по API адрес категории на wildberries.ru
     app.run(host=config["WEB_HOST"], debug=True)
-    # Принимает на вход по API адрес категории на wildberries.ru
 
-    # getting_info_about_wildberries_products(
-    # "https://www.wildberries.ru/promotions") # запрос обычный, но нужно в начало запроса постаавить action,
-    # только где его взять неизвестно
-
-    # getting_info_about_wildberries_products(
-    # "https://www.wildberries.ru/brands/asics") # обращаться к https://catalog.wb.ru/brands/special/catalog?
-    # и взять brand, в запросе будет идти после appType
-
-    # getting_info_about_wildberries_products(
-    # "https://www.wildberries.ru/catalog/detyam/odezhda/dlya-devochek/odezhda-dlya-doma")
-
-    # getting_info_about_wildberries_products(
-    # "https://www.wildberries.ru/catalog/detyam/tovary-dlya-malysha/peredvizhenie/avtokresla-detskie")
-    # getting_info_about_wildberries_products(
-    #   "https://www.wildberries.ru/catalog/elektronika/razvlecheniya-i-gadzhety/igrovye-konsoli/playstation")
