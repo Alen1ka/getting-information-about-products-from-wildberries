@@ -17,6 +17,11 @@ def read_config():
 
 config = read_config()
 
+# передача продюсеру названия сервера
+# чтобы при запуске новой программы парсер не писал, что нет категории
+P = Producer({
+    'bootstrap.servers': config["KAFKA_BROKER"]})
+
 
 @app.route('/api/get_info_wb/', methods=['POST'])
 def get_info_wb():
@@ -136,9 +141,8 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
         elif shard_key is None and subject is None:
             product_url = "https://www.wildberries.ru/promotions"
         response = requests.get(product_url).json()
-        print(
-            f"Данные о товарах с {page_number} страницы будут сохранены в топик {name_topic} по адресу "
-            f"{config['KAFKA_BROKER']}")
+        print(f"Данные о товарах с {page_number} страницы будут сохранены в топик {name_topic} по адресу "
+              f"{config['KAFKA_BROKER']}")
         save_answer_kafka(response, name_topic)
 
 
@@ -153,18 +157,14 @@ def delivery_report(err, msg):
 
 def save_answer_kafka(response, name_topic):
     """Сохраняет каждый JSON ответ сервера отдельным сообщением в "сыром виде" в топик **wb-category** в Kafka"""
-    # передача продюсеру названия сервера
-    p = Producer({
-        'bootstrap.servers': config["KAFKA_BROKER"]})
-
     # Добавление сообщения в очередь сообщений в топик (отправка брокеру)
     # callback - используется функцией pull или flush для последующего чтения данных отслеживания сообщения:
     # было ли успешно доставлено или нет
-    p.produce(name_topic, f'{response}', callback=delivery_report)
+    P.produce(name_topic, f'{response}', callback=delivery_report)
 
     # Дожидается доставки всех оставшихся сообщений и отчета о доставке
     # Если топик не создан, то он создается c 1 партицей по умолчанию (1 копия данных помещенных в топик)
-    p.flush()
+    P.flush()
 
 
 if __name__ == '__main__':

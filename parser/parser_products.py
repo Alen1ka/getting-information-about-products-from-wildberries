@@ -1,4 +1,4 @@
-from confluent_kafka import Producer, Consumer, TopicPartition
+from confluent_kafka import Producer, Consumer
 import datetime
 import yaml
 
@@ -19,7 +19,9 @@ def delivery_report(err, msg):
     if err is not None:
         print('Ошибка доставки сообщения: {}'.format(err))
     else:
-        print('Сообщение, доставленно в {} [{}]'.format(msg.topic(), msg.partition()))
+        msg_value = eval(msg.value().decode('utf-8'))
+        # вывводим дату в читаемом формате
+        print('Сообщение {}, доставленно в {} [{}]'.format({value if key != "time" else value.strftime("%Y-%m-%d %H:%M:%S") for key, value in msg_value.items()}, msg.topic(), msg.partition()))
 
 
 def save_answer_kafka(response, name_topic):
@@ -45,45 +47,39 @@ def get_data_from_topic():
     """Получить сырые данные из топика wb-category"""
     try:
         c = Consumer({
-           'bootstrap.servers': config["KAFKA_BROKER"],
-           'group.id': 'group_kafka'})
+            'bootstrap.servers': config["KAFKA_BROKER"],
+            'group.id': 'group_kafka',
+            'enable.auto.commit': False})
         c.subscribe([config["PRODUCER_DATA_TOPIC"]])
         print("Запуск парсера. Потребитель создан и топик назначен")
         while True:
-            msg = c.poll(1.0)  # запрашивает данные каждую миллисекунду
+            msg = c.poll(50.0)  # запрашивает данные каждую миллисекунду
             if msg is None:
-                continue
+                 continue
             if msg.error():
-                print("Ошибка при получении страницы с товрами из топика. {}".format(msg.error()))
-                continue
-            print('Получена страница с товарами.')
-            ####
-            #msg = msg.value().decode('utf-8')
-            #products = eval(msg)['data']['products']
-            #print(products[0])
-            #return 0
-            #####
-            TopicPartition
+                 print("Ошибка при получении страницы с товрами из топика. {}".format(msg.error()))
+                 continue
             time_of_receipt = datetime.datetime.now()
-            parse_products(msg.value(), time_of_receipt, config)
-            #return 0
+            parse_products(msg.value(), time_of_receipt, config, c)
+            # return 0
         c.close()
         print("Парсер закончил свою работу")
     except Exception as error:
         print(f"Ошибка парсера: {error}")
 
 
-def parse_products(msg, time_of_receipt, config):
+def parse_products(msg, time_of_receipt, config, c):
     """Парсинг товаров и отправка данных о каждом товаре в функцию сохранения товаров"""
     msg = msg.decode('utf-8')
     products = eval(msg)['data']['products']
     print("Получен список товаров из wb-category")
-    print(products[0])
 
     for product in products:
         product = {"time": time_of_receipt, "id": product['id'], "name": product['name'],
                    "price": product['salePriceU'] / 100, "sale": product['sale']}
         save_answer_kafka(product, config["CONSUMER_DATA_TOPIC"])
+        # зафиксировать обработку и отправку сообщения
+        c.commit()
 
 
 if __name__ == '__main__':
