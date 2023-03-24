@@ -1,6 +1,7 @@
-from confluent_kafka import Producer, Consumer
+from confluent_kafka import Producer, Consumer, TopicPartition
 import datetime
 import yaml
+
 
 def read_config():
     """Получение настроек из файла"""
@@ -23,7 +24,7 @@ def delivery_report(err, msg):
 
 def save_answer_kafka(response, name_topic):
     """Сохранение информации о каждом товаре страницы в топик **wb-products** в Kafka"""
-    print(f"Получена информация о товаре: {response}")
+    # print(f"Получена информация о товаре: {response}")
     # передача продюсеру названия сервера
     p = Producer({
         'bootstrap.servers': config["KAFKA_BROKER"]
@@ -57,13 +58,15 @@ def get_data_from_topic():
                 continue
             print('Получена страница с товарами.')
             ####
-            msg = msg.value().decode('utf-8')
-            products = eval(msg)['data']['products']
-            print(products[0])
-            return 0
+            #msg = msg.value().decode('utf-8')
+            #products = eval(msg)['data']['products']
+            #print(products[0])
+            #return 0
             #####
+            TopicPartition
             time_of_receipt = datetime.datetime.now()
             parse_products(msg.value(), time_of_receipt, config)
+            #return 0
         c.close()
         print("Парсер закончил свою работу")
     except Exception as error:
@@ -75,11 +78,13 @@ def parse_products(msg, time_of_receipt, config):
     msg = msg.decode('utf-8')
     products = eval(msg)['data']['products']
     print("Получен список товаров из wb-category")
+    print(products[0])
 
     for product in products:
         product = {"time": time_of_receipt, "id": product['id'], "name": product['name'],
                    "price": product['salePriceU'] / 100, "sale": product['sale']}
         save_answer_kafka(product, config["CONSUMER_DATA_TOPIC"])
+
 
 if __name__ == '__main__':
     get_data_from_topic()

@@ -6,6 +6,7 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
+
 def read_config():
     """Получение настроек из файла"""
     with open('config.yaml') as f:
@@ -15,7 +16,6 @@ def read_config():
 
 
 config = read_config()
-
 
 
 @app.route('/api/get_info_wb/', methods=['POST'])
@@ -30,9 +30,7 @@ def get_info_wb():
         # сделать запрос и взять первые пять страниц
         getting_product_pages(shard_key, kind, subject, ext, page_url_category)
     except Exception as error:
-        print({"Ошибка": error})
         return {"Ошибка": error}
-    print("Данные отправлены")
     return "Данные отправлены"
 
 
@@ -122,8 +120,8 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
         version = f"&version={client_params['version']}"
     else:
         version = ""
-
-    for page_number in range(1, 2):
+    # получить информацию с первых 5 страниц
+    for page_number in range(1, 6):
         if page_url_category != '/promotions':
             # dest - это определение региона и центра выдачи товаров, склада (Это может быть направление
             # или область карты, параметры для выборки из бд, пока неясно, что это за координаты/границы)
@@ -138,7 +136,9 @@ def getting_product_pages(shard_key, kind, subject, ext, page_url_category):
         elif shard_key is None and subject is None:
             product_url = "https://www.wildberries.ru/promotions"
         response = requests.get(product_url).json()
-        print(f"Данные о товарах с {page_number} страницы будут сохранены в топик {name_topic} по адресу {config['KAFKA_BROKER']}")
+        print(
+            f"Данные о товарах с {page_number} страницы будут сохранены в топик {name_topic} по адресу "
+            f"{config['KAFKA_BROKER']}")
         save_answer_kafka(response, name_topic)
 
 
@@ -166,7 +166,7 @@ def save_answer_kafka(response, name_topic):
     # Если топик не создан, то он создается c 1 партицей по умолчанию (1 копия данных помещенных в топик)
     p.flush()
 
-if __name__ == '__main__':
-   # Принимает на вход по API адрес категории на wildberries.ru
-    app.run(host=config["WEB_HOST"], debug=True)
 
+if __name__ == '__main__':
+    # Принимает на вход по API адрес категории на wildberries.ru
+    app.run(host=config["WEB_HOST"], debug=True)
